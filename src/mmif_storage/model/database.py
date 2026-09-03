@@ -8,7 +8,7 @@ Module to build and access the assets database.
 
 # TODO: must test whether the database can be initialized
 # TODO: must revisit how entires are added to the databse since updates from
-#       api.model.assets did not seem to take hold.
+#       mmif_storage.model.assets did not seem to take hold.
 # TODO: must put in guard rails to update the index anytime an asset is added
 
 import time
@@ -16,8 +16,8 @@ import sqlite3
 from datetime import date
 from pathlib import Path
 
-from api import DATABASE
-from api.model.assets import file_typer, check_asset_dir, check_symlink
+from mmif_storage import DATABASE
+from mmif_storage.model.assets import file_typer, check_asset_dir, check_symlink
 
 
 def get_db_connection() -> sqlite3.Connection:

@@ -79,11 +79,11 @@ from flask import request, jsonify, Blueprint, send_file
 
 from mmif import utils, Mmif
 
-from api import STORAGE_DIR
-from api.model.storage import get_mmif_for_guid
-from api.model.storage import generate_workflow_identifier_from_workflow_data
-from api.model.storage import get_files_at_workflow, create_zipfile
-from api.errors import StorageServerError
+from mmif_storage import STORAGE_DIR
+from mmif_storage.model.storage import get_mmif_for_guid
+from mmif_storage.model.storage import generate_workflow_identifier_from_workflow_data
+from mmif_storage.model.storage import get_files_at_workflow, create_zipfile
+from mmif_storage.errors import StorageServerError
 
 
 bp = Blueprint('mmif_download', __name__)

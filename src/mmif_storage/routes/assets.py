@@ -18,7 +18,7 @@ Examples:
 
 from flask import request, Blueprint
 
-from api.model.assets import search_assets
+from mmif_storage.model.assets import search_assets
 
 
 bp = Blueprint('assets', __name__)

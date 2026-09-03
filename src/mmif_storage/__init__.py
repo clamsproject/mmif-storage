@@ -16,7 +16,7 @@ DEVELOPER_MODE = bool(int(os.environ.get('DEVELOPER_MODE')))
 
 def create_app(build_db=BUILD_DB, developer_mode=DEVELOPER_MODE):
 
-    from api.model.database import initialize_database
+    from mmif_storage.model.database import initialize_database
     
     app = Flask(__name__)
     app.config.from_prefixed_env()
@@ -34,13 +34,13 @@ def create_app(build_db=BUILD_DB, developer_mode=DEVELOPER_MODE):
 
 def register_blueprints(app: Flask, developer_mode: bool):
 
-    from api.www import bp as bp_www
-    from api.routes.home import bp as bp_home
-    from api.routes.assets import bp as bp_assets
-    from api.routes.analytics import bp as bp_analytics
-    from api.routes.upload import bp as bp_upload
-    from api.routes.download import bp as bp_download
-    from api.experiments import bp as bp_experiments
+    from mmif_storage.www import bp as bp_www
+    from mmif_storage.routes.home import bp as bp_home
+    from mmif_storage.routes.assets import bp as bp_assets
+    from mmif_storage.routes.analytics import bp as bp_analytics
+    from mmif_storage.routes.upload import bp as bp_upload
+    from mmif_storage.routes.download import bp as bp_download
+    from mmif_storage.experiments import bp as bp_experiments
 
     app.register_blueprint(bp_www)
     app.register_blueprint(bp_home)

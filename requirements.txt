@@ -1,4 +1,8 @@
+psutil>=7.2.2
+flask==2.*
 python-dotenv==1.*
+flask-dotenv
 gunicorn
 mmif-python==1.4.*
+rich>=15.0.0
 clams_utils

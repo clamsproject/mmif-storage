@@ -45,8 +45,8 @@ search was not succesful.
 
 from pathlib import Path
 
-from api import ASSET_DIR
-from api.model import database as db
+from mmif_storage import ASSET_DIR
+from mmif_storage.model import database as db
 
 
 # Asset file types

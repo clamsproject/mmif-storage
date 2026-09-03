@@ -11,8 +11,8 @@ Example:
 
 from flask import jsonify, Blueprint
 
-from api import STORAGE_DIR
-from api.model import analytics
+from mmif_storage import STORAGE_DIR
+from mmif_storage.model import analytics
 
 
 bp = Blueprint('analytics', __name__)

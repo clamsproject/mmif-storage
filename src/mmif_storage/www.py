@@ -11,16 +11,18 @@ from operator import itemgetter
 from flask import Flask, request, jsonify, Blueprint, render_template
 from jinja2 import Template
 
+'''
 import inspector
 from inspector.inspect import Summary
 from inspector.config import INDEX_PAGE, CSS_PAGE, JS_PAGE, VIEWS_PAGE
 from inspector.config import TIMEFRAMES_PAGE, CORRELATIONS_PAGE, TRANSCRIPT_PAGE
 from inspector.config import CAPTIONS_PAGE, ENTITIES_PAGE
+'''
 
-from api.model.assets import search_assets
-from api.model.analytics import storage_analytics
-from api.utils import ServerDirectory, MmifFile, ParameterFile
-from api.utils import path_from_workflow_specs, strip_prefix
+from mmif_storage.model.assets import search_assets
+from mmif_storage.model.analytics import storage_analytics
+from mmif_storage.utils import ServerDirectory, MmifFile, ParameterFile
+from mmif_storage.utils import path_from_workflow_specs, strip_prefix
 
 
 load_dotenv()
@@ -64,7 +66,7 @@ def search_mmif_get():
 @bp.post('/www/search_mmif.html')
 def search_mmif_post():
     # TODO: this is a tad messy, and there is some overlap here with 
-    # api.mmif_storage.download_mmif(), may need some refactoring
+    # mmif_storage.mmif_storage.download_mmif(), may need some refactoring
     
     guid = request.form.get('guid', '')
     workflow = request.form.get('workflow', '')
@@ -130,6 +132,7 @@ def view_file():
     return render_template('view_mmif.html', mfile=mfile, mode=mode)
 
 
+'''
 @bp.get(f'/www/inspector/{INDEX_PAGE}')
 def inspector_index():
     data = InspectorData(INDEX_PAGE)
@@ -172,6 +175,7 @@ def display_inspector_page(page_name: str) -> str:
     rendered_template = data.template.render(
         summary=Summary(data.summ_file, data.summary))
     return update_rendered(rendered_template, data.css_file, data.js_file)
+'''
 
 
 @bp.get('/www/analytics.html')

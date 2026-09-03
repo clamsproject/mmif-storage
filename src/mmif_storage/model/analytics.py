@@ -8,7 +8,7 @@ import json
 import os
 import re
 
-from api import STORAGE_DIR
+from mmif_storage import STORAGE_DIR
 
 
 def storage_analytics() -> dict:

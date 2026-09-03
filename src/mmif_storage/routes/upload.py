@@ -6,9 +6,9 @@ Route for uploading MMIF documents.
 
 from flask import request, jsonify, Blueprint
 
-from api import STORAGE_DIR
-from api.errors import UploadWarning
-from api.model.storage import upload_mmif
+from mmif_storage import STORAGE_DIR
+from mmif_storage.errors import UploadWarning
+from mmif_storage.model.storage import upload_mmif
 
 
 bp = Blueprint('mmif_upload', __name__)

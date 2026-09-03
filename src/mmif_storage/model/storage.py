@@ -12,8 +12,8 @@ from mmif import Mmif
 from mmif.utils.workflow_helper import generate_param_hash
 from mmif.utils.workflow_helper import generate_workflow_identifier
 
-from api import STORAGE_DIR
-from api.errors import StorageServerError, UploadWarning, EmptyMmifWarning
+from mmif_storage import STORAGE_DIR
+from mmif_storage.errors import StorageServerError, UploadWarning, EmptyMmifWarning
 
 
 def upload_mmif(body: str, root: str = STORAGE_DIR, overwrite: str = True) -> Path:

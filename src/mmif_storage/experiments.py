@@ -74,7 +74,7 @@ curl -X POST 127.0.0.1:8001/storeapi/download \
 
 import os, time, copy, json, random
 from flask import request, Blueprint, Response, jsonify, current_app
-from api import utils
+from mmif_storage import utils
 
 
 bp = Blueprint('experiments', __name__)
