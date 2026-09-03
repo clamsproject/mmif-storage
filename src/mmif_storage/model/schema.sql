@@ -1,0 +1,4 @@
+-- NOTE: NOT NEEDED IN THIS REPO, BUT MAYBE USEFUL IN THE TRANSITION PHASE
+
+CREATE VIRTUAL TABLE IF NOT EXISTS map USING fts5(
+	GUID, file_type, server_path, date_created, date_last_accessed, tokenize="trigram");

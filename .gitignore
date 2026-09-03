@@ -1,0 +1,5 @@
+*.py~
+.DS_Store
+__pycache__
+find.sh
+backup.sh

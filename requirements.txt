@@ -1,0 +1,4 @@
+python-dotenv==1.*
+gunicorn
+mmif-python==1.4.*
+clams_utils
