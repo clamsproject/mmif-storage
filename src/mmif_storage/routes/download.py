@@ -10,7 +10,7 @@ All routes:
     storeapi/peek
     storeapi/download
 
-The latter two are older routes and those are used in the examples below.
+The latter two are older routes.
 
 Example requests:
 
@@ -22,10 +22,7 @@ curl -X POST 127.0.0.1:8001/api/mmif/peek \
     -H 'Content-Type: "application/json"' \
     -d '{"swt-detection/v8.6": {}}'
 
-curl -X POST 127.0.0.1:8001/api/mmif/peek \
-    -H 'Content-Type: "application/json"' \
-    -d '{"workflow": {"swt-detection/v8.6": {"pretty": "True"}}}'
-
+curl -X POST 127.0.0.1:8001/api/mmif/peek -H 'Content-Type: "application/json"' -d '{"swt-detection/v8.6": {}}'
 
 # Downloading a single MMIF file. In addition to a workflow this also requires
 # an identifier (a GUID in the aapb case). The return value is a MMIF file.
@@ -65,8 +62,6 @@ curl -X POST 127.0.0.1:8001/api/mmif/download \
     -d '{"guid": ["cpb-aacip-4071f72dd46-clip1", "cpb-aacip-c72fd5cbadc"],
          "workflow_id": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e"}'
 
-
-
 """
 
 import json
@@ -80,9 +75,10 @@ from flask import request, jsonify, Blueprint, send_file
 from mmif import utils, Mmif
 
 from mmif_storage import STORAGE_DIR
-from mmif_storage.model.storage import get_mmif_for_guid
+
+from mmif_storage.model import storage
+from mmif_storage.model.storage import get_mmif_for_guid, create_zipfile
 from mmif_storage.model.storage import generate_workflow_identifier_from_workflow_data
-from mmif_storage.model.storage import get_files_at_workflow, create_zipfile
 from mmif_storage.errors import StorageServerError
 
 
@@ -91,17 +87,10 @@ bp = Blueprint('mmif_download', __name__)
 
 
 @bp.post('/api/mmif/peek')
-@bp.post('/storeapi/peek')
 def peek():
     data = json.loads(request.data.decode('utf-8'))
-    wfid = generate_workflow_identifier_from_workflow_data(data)
-    if not wfid:
-        return jsonify(
-            {'error': 'Could not build a workflow identifier from the input given.'})
-    # load environment variable to concat workflow with local storage path
-    directory = os.environ.get('STORAGE_DIR')
-    wfpath = os.path.join(directory, wfid)
-    return jsonify({'workflow_id': wfid, 'filenames': get_files_at_workflow(wfpath)})
+    peek_result = storage.peek(data)
+    return jsonify(peek_result)
 
 
 @bp.post('/api/mmif/download')

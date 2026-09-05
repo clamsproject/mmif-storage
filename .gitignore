@@ -5,3 +5,7 @@ find.sh
 backup.sh
 .env
 venv
+src/mmif_storage/database.db
+storage-response*
+tmp*
+/bundle*

@@ -16,7 +16,20 @@ from mmif_storage import STORAGE_DIR
 from mmif_storage.errors import StorageServerError, UploadWarning, EmptyMmifWarning
 
 
-def upload_mmif(body: str, root: str = STORAGE_DIR, overwrite: str = True) -> Path:
+def peek(workflow_data: dict) -> dict:
+    """Return a dictionary with a workflow identifier and a list of files at that
+    workflow. Return a warning if no workflow identifier could be created."""
+    wfid = generate_workflow_identifier_from_workflow_data(workflow_data)
+    if not wfid:
+        return {
+            'warning': 'Could not build a workflow identifier from the input given.'}
+    wfpath = os.path.join(STORAGE_DIR, wfid)
+    return {
+        'workflow_id': wfid,
+        'filenames': get_files_at_workflow(wfpath)}
+
+
+def upload_mmif(body: str, root: str = STORAGE_DIR, overwrite: str = True, binary=False) -> Path:
 
     """Upload the MMIF file in the body to the MMIF storage. Upload includes 
     writing parameter files for the views. Do not overwrite unless overwrite is
@@ -40,7 +53,7 @@ def upload_mmif(body: str, root: str = STORAGE_DIR, overwrite: str = True) -> Pa
     # Note that the absolute path is not necessarily absolute because cur_root
     # is allowed to be relative.
     relative_path = Path(wfid) / f'{guid}.mmif'
-    absolute_path = cur_root / wfid / f'{guid}.mmif'
+    absolute_path = Path(cur_root) / wfid / f'{guid}.mmif'
 
     # Check for cases when there will be no upload.
     if not mmif.views:
@@ -50,7 +63,8 @@ def upload_mmif(body: str, root: str = STORAGE_DIR, overwrite: str = True) -> Pa
             'Upload file already exists, use overwrite=True if you want to overwrite.',
             path=relative_path)
 
-    with open(absolute_path, 'w') as f:
+    mode = 'wb' if binary else 'w'
+    with open(absolute_path, mode) as f:
         f.write(body)
 
     return relative_path
@@ -90,7 +104,7 @@ def write_parameters(root: str, wfid: str, param_dicts: list):
             json.dump(param_dicts[i // 3], f, indent=2)
 
 
-def get_mmif_for_guid(workflow_id: str, identifier: str, num_views: int):
+def get_mmif_for_guid(workflow_id: str, identifier: str, num_views: int) -> str:
     """
     Retrieve the MMIF file for a workflow and an identifier. If none was found
     raise a StorageServerError.
@@ -112,7 +126,7 @@ def get_mmif_for_guid(workflow_id: str, identifier: str, num_views: int):
             raise StorageServerError(f'Did not find: {fname.split(".")[0]}')
 
 
-def rewind_time(workflow_id, guid, num_views):
+def rewind_time(workflow_id, guid, num_views) -> str:
     """
     This method takes in a workflow (path), a guid, and a number of views, and uses
     os.walk to iterate through directories that begin with that workflow. It takes
@@ -137,6 +151,10 @@ def create_zipfile(workflow_id: str, guids: list) -> BytesIO:
     When retrieving multiple MMIFs for a workflow, we construct a zip file that
     contains a file for each guid.
     """
+    # TODO: this now creates the entire zipfile in memory, should instead use some
+    # kind of streaming, and then probably update the way the caling code deals with
+    # the reponse
+    # See https://oneuptime.com/blog/post/2026-02-03-fastapi-file-downloads/view
     errors = dict()
     mem_file = BytesIO()
     with zipfile.ZipFile(mem_file, 'w', zipfile.ZIP_DEFLATED) as mmif_zip:

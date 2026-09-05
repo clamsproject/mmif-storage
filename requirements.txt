@@ -6,3 +6,5 @@ gunicorn
 mmif-python==1.4.*
 rich>=15.0.0
 clams_utils
+fastapi[standard]
+uvicorn
