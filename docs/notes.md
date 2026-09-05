@@ -4,7 +4,6 @@ Notes taken while working on the AAPB-Brandeis datahousing server. Some of these
 
 [ [Identifiers](notes-guids.md)
 | [Parameters](notes-parameters.md)
-| [MMIF downloads](notes-mmif-downloads.md)
 ]
 
 

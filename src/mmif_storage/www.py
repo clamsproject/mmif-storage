@@ -11,15 +11,6 @@ from operator import itemgetter
 from flask import Flask, request, jsonify, Blueprint, render_template
 from jinja2 import Template
 
-'''
-import inspector
-from inspector.inspect import Summary
-from inspector.config import INDEX_PAGE, CSS_PAGE, JS_PAGE, VIEWS_PAGE
-from inspector.config import TIMEFRAMES_PAGE, CORRELATIONS_PAGE, TRANSCRIPT_PAGE
-from inspector.config import CAPTIONS_PAGE, ENTITIES_PAGE
-'''
-
-from mmif_storage.model.assets import search_assets
 from mmif_storage.model.analytics import storage_analytics
 from mmif_storage.utils import ServerDirectory, MmifFile, ParameterFile
 from mmif_storage.utils import path_from_workflow_specs, strip_prefix
@@ -34,7 +25,6 @@ bp = Blueprint('www', __name__, template_folder='templates')
 DEBUG = True
 
 
-ASSET_DIR = os.environ.get('ASSET_DIR')
 STORAGE_DIR = os.environ.get('STORAGE_DIR')
 
 
@@ -42,20 +32,6 @@ STORAGE_DIR = os.environ.get('STORAGE_DIR')
 @bp.get('/www/index.html')
 def index():
     return render_template('index.html')
-
-
-@bp.route('/www/search_assets.html', methods=['get', 'post'])
-def search_asset():
-    term = ''
-    types = []
-    paths = []
-    if request.method == 'POST':
-        term = request.form.get('searchterm')
-        types = request.form.get('filetypes').split()
-        paths = search_assets(term, types)
-        paths = [str(strip_prefix(ASSET_DIR, Path(p))) for p in paths]
-        paths = list(enumerate(paths))
-    return render_template('search_assets.html', term=term, types=types, paths=paths)
 
 
 @bp.get('/www/search_mmif.html')

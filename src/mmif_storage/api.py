@@ -1,21 +1,18 @@
 """
 
-Should have the following functionailty from the old Flask server:
+Now has the following functionality from the old Flask server:
 
-- ✔︎ peek
-- ✔︎ analytics
-- ✔︎ file download (single file)
-- ✔︎ file download (zipfile)
-- ✔︎ file upload
+- peek
+- analytics
+- file download (single file)
+- file download (zipfile)
+- file upload
 
-All of these should use the Python API. In some cases functionality will have to
-be moved from the Flask code into mmif_storage.model.
+Need to add all the search functionality from the Shack, which will require moving
+some code from the clamshack to this repository in mmif_storage.model.
 
-After this we would have a first version with just the functionality (more or less)
-as we had before.
-
-Then add all the search functionality from the Shack, which will require moving some
-code from the Shack to this repository in mmif_storage.model.
+Other things to do:
+- upload now always overwrites old file
 
 Use __main__.py to test calling this programmatically.
 
@@ -71,20 +68,20 @@ class MmifFile(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
-@app.get('/api/mmif/analytics', tags=['analytics'])
+@app.get('/api/mmif/analytics', tags=['Analytics'])
 def get_analytics():
     """Return full analytics of the MMIF storage content."""
     return analytics.storage_analytics()
 
 
-@app.get('/api/mmif/paths', tags=['analytics'])
+@app.get('/api/mmif/paths', tags=['Analytics'])
 def get_paths():
     """Return all workflow paths in the MMIF storage."""
     stats = analytics.storage_analytics()
     return [wf["path"] for wf in stats["workflows"]]
 
 
-@app.post('/api/mmif/peek', tags=['download'])
+@app.post('/api/mmif/peek', tags=['Peek and Search'])
 def peek(data: Workflow) -> PeekResult:
     peek_result = storage.peek(data.simplify())
     return PeekResult(
@@ -92,7 +89,7 @@ def peek(data: Workflow) -> PeekResult:
         filenames=peek_result['filenames'])
 
 
-@app.post('/api/mmif/download', tags=['download'])
+@app.post('/api/mmif/download', tags=['Upload and Download'])
 def download(request: DownloadRequest) -> MmifFile | list | Any:
     # TODO. The return type is a bit of a mess now. MmifFile is obvious. The second
     # type is for when single file download fails. The third is for when a Zipfile 
@@ -106,10 +103,6 @@ def download(request: DownloadRequest) -> MmifFile | list | Any:
     guid = request.guid
     storage_dir = os.environ.get('STORAGE_DIR')
     workflow_dir = os.path.join(storage_dir, wfid)
-    #print(f'>>> wfid={wfid}')
-    #print(f'>>> numviews={num_views}')
-    #print(f'>>> storage_dir={storage_dir}')
-    #print(f'>>> workflow_dir={workflow_dir}')
     if not wfid:
         # TODO: does this make sense?
         return jsonify({'error': 'Missing required parameters: need at least a workflow'})
@@ -119,13 +112,10 @@ def download(request: DownloadRequest) -> MmifFile | list | Any:
         return get_mmif_files(workflow_dir, guid, num_views)
 
 
-@app.post('/api/mmif/upload', tags=['upload'])
+@app.post('/api/mmif/upload', tags=['Upload and Download'])
 async def upload(file: UploadFile):
-    #print('>>>', file)
-    #print('>>>', file.content_type)
     contents = await file.read()
-    with open(f'out-{file.filename}', 'wb') as fh:
-        storage.upload_mmif(contents, overwrite=True, binary=True)
+    storage.upload_mmif(contents, overwrite=True, binary=True)
     return file
 
 
