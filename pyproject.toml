@@ -5,13 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mmif-storage"
 version = "0.1.0"
-description = "Tool to manage, browse and inspect CLAMS assets and MMIF files."
+description = "Tool to manage MMIF files."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "clams-utils>=251011",
     "mmif-python==1.4.*",
     "rich>=15.0.0",
+    "fastapi[standard]"
 ]
 
 [tool.setuptools.packages.find]

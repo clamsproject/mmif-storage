@@ -1,38 +1,37 @@
 # mmif-storage
 
-Code to interact with a set of MMIF files
+Code to interact with a set of MMIF files. It contains a Python interface a web server API and a browser.
 
-To set up:
+
+### Setting up
 
 - Install dependencies from `requirements.txt`.
 - Move to the `src` directory.
 - Copy `.env.sample` into `.env`.
-- Edit `STORAGE_DIR` in `.env` if needed.
+- Edit settings in `.env` if needed. The most like change is to `STORAGE_DIR`, which now points to the small toy storage directory that is included in this repository.
 
-To check whether you can run the main module::
+To check whether you can run the main module:
 
 ```bash
 python -m mmif_storage peek
 ```
 
-### The Flask Server
 
-This is to be retired, now just there for making sure the FastAPI has the same or better behavior. 
+### Using the API and the browser
 
-To start the Flask server:
+To start the API do one of the following:
+
+```bash
+fastapi run mmif_storage/api.py
+uvicorn mmif_storage.api:app
+```
+
+There are many example API calls in [docs/api-examples.md](docs/api-examples.md).
+
+To run the MMIF browser do:
 
 ```bash
 flask run
 ```
 
-### FastAPI
-
-To start FastAPI:
-
-```bash
-fastapi dev mmif_storage/api.py
-```
-
-You can also do `uvicorn mmif_storage.api:app --reload`.
-
-There are many example API calls in [docs/api-examples.md](docs/api-examples.md).
+With the current environment setting the browser will be running at [http://127.0.0.1:5000/www/](http://127.0.0.1:5000/www/).

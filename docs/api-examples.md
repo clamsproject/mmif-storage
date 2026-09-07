@@ -2,7 +2,7 @@
 
 This goes into a little more detail then what you get in the SwaggerUI automatic documentation at [127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
-We are assuming that there is a MMIF Storage API up and running, and that the MMIF Storage content at least has the following paths:
+We are assuming that there is a MMIF Storage API up and running on port 8000, and that the MMIF Storage content at least has the following paths:
 
 ```
 swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e
@@ -70,7 +70,7 @@ This overwrites an older file if there was one, need to add option to prohibit o
 curl -X POST 'http://127.0.0.1:8000/api/mmif/upload' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'file=@src/cpb-aacip-f551104e446-clip1.mmif'
+  -F 'file=@data/cpb-aacip-f551104e446-clip1.mmif'
 ```
 
 
