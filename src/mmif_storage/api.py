@@ -14,8 +14,6 @@ some code from the clamshack to this repository in mmif_storage.model.
 Other things to do:
 - upload now always overwrites old file
 
-Use __main__.py to test calling this programmatically.
-
 """
 
 import os
@@ -26,6 +24,8 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import StreamingResponse
 
 from mmif import View
+
+import mmif_storage
 from mmif_storage.model import storage, analytics
 from mmif_storage.errors import StorageServerError
 
@@ -101,8 +101,7 @@ def download(request: DownloadRequest) -> MmifFile | list | Any:
         wfid = storage.generate_workflow_identifier_from_workflow_data(request.workflow)
     num_views = len(request.workflow)
     guid = request.guid
-    storage_dir = os.environ.get('STORAGE_DIR')
-    workflow_dir = os.path.join(storage_dir, wfid)
+    workflow_dir = os.path.join(mmif_storage.config.STORAGE_DIR, wfid)
     if not wfid:
         # TODO: does this make sense?
         return jsonify({'error': 'Missing required parameters: need at least a workflow'})
@@ -113,10 +112,16 @@ def download(request: DownloadRequest) -> MmifFile | list | Any:
 
 
 @app.post('/api/mmif/upload', tags=['Upload and Download'])
-async def upload(file: UploadFile):
+async def upload(file: UploadFile) -> dict:
+    # TODO: needs some error handling
+    # TODO: this claims success even if it fails to upload the file
     contents = await file.read()
-    storage.upload_mmif(contents, overwrite=True, binary=True)
-    return file
+    path = storage.upload_mmif(contents, overwrite=True, binary=True)
+    return {
+        "destination": str(path),
+        "filename": file.filename,
+        "filesize": file.size,
+        "status": "succes" }
 
 
 def get_mmif_file(workflow_id: str, guid: str, num_views: int) -> dict:
@@ -128,7 +133,7 @@ def get_mmif_file(workflow_id: str, guid: str, num_views: int) -> dict:
     try:
         return storage.get_mmif_for_guid(workflow_id, guid, num_views)
     except StorageServerError as e:
-        return {"error": str(e)}, 201
+        return {"warning": str(e)}
 
 
 def get_mmif_files(workflow_id: str, guids: list, num_views: int):
@@ -141,5 +146,4 @@ def get_mmif_files(workflow_id: str, guids: list, num_views: int):
     this a bit.
     """
     mem_file = storage.create_zipfile(workflow_id, guids)
-    print('>>>', mem_file)
     return StreamingResponse(mem_file, media_type="application/octet-stream")

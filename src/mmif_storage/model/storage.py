@@ -12,7 +12,7 @@ from mmif import Mmif
 from mmif.utils.workflow_helper import generate_param_hash
 from mmif.utils.workflow_helper import generate_workflow_identifier
 
-from mmif_storage import STORAGE_DIR
+import mmif_storage
 from mmif_storage.errors import StorageServerError, UploadWarning, EmptyMmifWarning
 
 
@@ -23,13 +23,16 @@ def peek(workflow_data: dict) -> dict:
     if not wfid:
         return {
             'warning': 'Could not build a workflow identifier from the input given.'}
-    wfpath = os.path.join(STORAGE_DIR, wfid)
+    wfpath = os.path.join(mmif_storage.config.STORAGE_DIR, wfid)
     return {
         'workflow_id': wfid,
         'filenames': get_files_at_workflow(wfpath)}
 
 
-def upload_mmif(body: str, root: str = STORAGE_DIR, overwrite: str = True, binary=False) -> Path:
+def upload_mmif(
+    body: str,
+    root: str = mmif_storage.config.STORAGE_DIR,
+    overwrite: str = True, binary=False) -> Path:
 
     """Upload the MMIF file in the body to the MMIF storage. Upload includes 
     writing parameter files for the views. Do not overwrite unless overwrite is

@@ -8,7 +8,7 @@ import json
 import os
 import re
 
-from mmif_storage import STORAGE_DIR
+import mmif_storage
 
 
 def storage_analytics() -> dict:
@@ -21,17 +21,18 @@ def storage_analytics() -> dict:
     # TODO (ledibr @ 10/12/25): consider adding params to show/hide certain parts
     # e.g. full workflow specs?
 
+    storage_dir = mmif_storage.config.STORAGE_DIR
     analytics = {"total_mmif_files": 0, "total_workflows": 0, "workflows": [],
                 "non_terminal_mmif_count": 0, "dirty_workflow_mmif_count": 0}
     app_specs = {}
 
-    for root, dirs, files in os.walk(STORAGE_DIR):
+    for root, dirs, files in os.walk(storage_dir):
         #if current_app.config.get('DEBUG'):
         #    print("Root:", root)
         #    print("dirs:", dirs)
         #    print("files:", files)
 
-        curr_workflow = root[root.index(STORAGE_DIR) + len(STORAGE_DIR):]
+        curr_workflow = root[root.index(storage_dir) + len(storage_dir):]
         curr_workflow = curr_workflow.lstrip('/')
 
         json_list = [f for f in files if re.search(r'\.json$', f)]

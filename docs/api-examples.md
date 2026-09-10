@@ -2,23 +2,9 @@
 
 This goes into a little more detail then what you get in the SwaggerUI automatic documentation at [127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
-We are assuming that there is a MMIF Storage API up and running on port 8000, and that the MMIF Storage content at least has the following paths:
+We are assuming that that the MMIF Storage API is up and running on port 8000, and that it is using the example data in `data/storage-example` (which the sample environment file points at).
 
-```
-swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e
-swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e
-```
-
-This can be obtained by:
-
-1. Running swt-detection version v.8.6 without setting any properties.
-2. Running smolvlm2-captioner version v1.0 on the output of the above, again without setting any properties.
-
-> TODO. Need to also provide the input files. Maybe invest in creating a download with all data. Or include a mmif-storage directory example in here. Also need to add the upload file that is used below.
-
-Examples below will need to be adjusted when your MMIF Storage is different.
-
-All examples are using curl invocation.
+All examples are using curl invocation. If an output is given then it is pretty printed, which in real life you won't get unless you pipe the output through something like the jq utility.
 
 
 ## Analytics
@@ -28,11 +14,43 @@ To get all analytics:
 ```json
 curl -X GET 'http://127.0.0.1:8000/api/mmif/analytics' -H 'accept: application/json'
 ```
+```json
+{
+  "total_mmif_files": 4,
+  "total_workflows": 2,
+  "workflows": [
+    {
+      "path": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
+      "spec": {
+        "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e": {}
+      },
+      "mmif_count": 2
+    },
+    {
+      "path": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e",
+      "spec": {
+        "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e": {},
+        "smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e": {}
+      },
+      "mmif_count": 2
+    }
+  ],
+  "non_terminal_mmif_count": 2,
+  "dirty_workflow_mmif_count": 0
+}
+```
 
 To get all paths in the MMIF Storage::
 
 ```json
 curl -X GET 'http://127.0.0.1:8000/api/mmif/paths' -H 'accept: application/json'
+```
+
+```json
+[
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e"
+]
 ```
 
 
@@ -50,6 +68,15 @@ curl -X POST 'http://127.0.0.1:8000/api/mmif/peek' \
     { "app": "smolvlm2-captioner", "version": "v1.0", "properties": {} } ]
 }'
 ```
+```json
+{
+  "workflow_id": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e",
+  "filenames": [
+    "cpb-aacip-f551104e446-clip2",
+    "cpb-aacip-f551104e446-clip1"
+  ]
+}
+```
 
 If you use SwaggerUI you can also simply enter the following:
 
@@ -64,7 +91,7 @@ If you use SwaggerUI you can also simply enter the following:
 
 ## File upload
 
-This overwrites an older file if there was one, need to add option to prohibit overwrite.
+In this case (unlike with the other examples) you need to be in the root directory of the repository for it to work since there is a file path in the curl command.
 
 ```json
 curl -X POST 'http://127.0.0.1:8000/api/mmif/upload' \
@@ -72,6 +99,23 @@ curl -X POST 'http://127.0.0.1:8000/api/mmif/upload' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@data/cpb-aacip-f551104e446-clip1.mmif'
 ```
+```json
+{
+  "destination": "dummy-app/v0.1/d41d8cd98f00b204e9800998ecf8427e/cpb-aacip-f551104e446-clip1.mmif",
+  "file": {
+    "filename": "cpb-aacip-f551104e446-clip1.mmif",
+    "file": {},
+    "size": 35342,
+    "headers": {
+      "content-disposition": "form-data; name=\"file\"; filename=\"cpb-aacip-f551104e446-clip1.mmif\"",
+      "content-type": "application/octet-stream"
+    },
+    "_max_mem_size": 1048576
+  }
+}
+```
+
+This overwrites an older file if there was one, need to add option to prohibit overwrite.
 
 
 ## File download
@@ -83,7 +127,7 @@ an identifier (a GUID in the aapb case). The return value is a MMIF file.
 curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{ "guid": "cpb-aacip-4071f72dd46-clip1",
+  -d '{ "guid": "cpb-aacip-f551104e446-clip1",
         "workflow": {"swt-detection/v8.6": {}}}'
 ```
 
@@ -93,8 +137,13 @@ Here is one that should not return a MMIF file because the workflow is not in th
 curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{ "guid": "cpb-aacip-4071f72dd46-clip1",
+  -d '{ "guid": "cpb-aacip-f551104e446-clip1",
         "workflow": {"swt-detection/v8.6": {"Pretty": "True"}}}'
+```
+```json
+{
+  "warning": "Did not find: cpb-aacip-f551104e446-clip1"
+}
 ```
 
 Same as above, but now with a list of identifiers, which returns a zip file.
@@ -107,7 +156,7 @@ curl \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   --output storage-response.zip \
-  -d '{ "guid": ["cpb-aacip-4071f72dd46-clip1"],
+  -d '{ "guid": ["cpb-aacip-f551104e446-clip1"],
         "workflow": {"swt-detection/v8.6": {}}}'
 ```
 
@@ -118,7 +167,7 @@ this works whether the guid value is a string or a list.
 curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{"guid": "cpb-aacip-4071f72dd46-clip1",
+  -d '{"guid": "cpb-aacip-f551104e446-clip1",
        "workflow_id": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e"}'
 ```
 
@@ -127,6 +176,6 @@ curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   --output storage-response.zip \
-  -d '{"guid": ["cpb-aacip-4071f72dd46-clip1", "cpb-aacip-c72fd5cbadc"],
+  -d '{"guid": ["cpb-aacip-f551104e446-clip1", "cpb-aacip-c72fd5cbadc"],
          "workflow_id": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e"}'  
 ```

@@ -6,14 +6,15 @@ build-backend = "setuptools.build_meta"
 name = "mmif-storage"
 version = "0.1.0"
 description = "Tool to manage MMIF files."
-readme = "README.md"
-requires-python = ">=3.10"
-dependencies = [
-    "clams-utils>=251011",
-    "mmif-python==1.4.*",
-    "rich>=15.0.0",
-    "fastapi[standard]"
-]
+requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[project.scripts]
+start_api = "mmif_storage:start_api"
+start_www = "mmif_storage:start_www"
 
 [tool.setuptools.packages.find]
 where = ["./src"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }

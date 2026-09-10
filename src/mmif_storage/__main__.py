@@ -4,6 +4,7 @@
 import sys
 import json
 
+import mmif_storage
 from mmif_storage.model import storage, analytics
 
 
@@ -24,3 +25,7 @@ if len(sys.argv) > 1:
         stats = analytics.storage_analytics()
         print_json([wf["path"] for wf in stats["workflows"]])
 
+    elif sys.argv[1] == 'api':
+        if len(sys.argv) > 2:
+            storage.STORAGE_DIR = sys.argv[2]
+        mmif_storage.run_api()
