@@ -11,10 +11,16 @@ The recommended Python version is 3.11 or higher, but older version may just wor
 - Copy `.env.sample` into `.env`.
 - Edit settings in `.env` if needed. The most like change is to `STORAGE_DIR`, which now points to the small toy storage directory that is included in this repository.
 
-To check whether you can run the main module:
+To check whether you can run the main module and see the storage:
 
 ```bash
-python -m mmif_storage peek
+python -m mmif_storage paths
+```
+```json
+[
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e"
+]
 ```
 
 
@@ -27,15 +33,15 @@ fastapi run mmif_storage/api.py
 uvicorn mmif_storage.api:app
 ```
 
-Add the `--reload` option to either command when developing. See [docs/api-examples.md](docs/api-examples.md) for example API calls.
+See [docs/api-examples.md](docs/api-examples.md) for example API calls. The SwaggerUI page will be at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 To run the MMIF browser do:
 
 ```bash
-gunicorn "mmif_storage:create_app()" -b :5000
+gunicorn "mmif_storage:create_app()" -b 0.0.0.0:8001
 ```
 
-The port number is used here because by default gunicorn runs on 8000, which may already be taken by the API.
+The port number is used here because by default gunicorn runs on 8000, which may already be taken by the API. The browser then runs at [http://127.0.0.1:8001/www/](http://127.0.0.1:8001/www/).
 
 For development use
 
@@ -43,17 +49,40 @@ For development use
 flask run
 ```
 
-With the current environment settings the browser will be running at [http://127.0.0.1:5000/www/](http://127.0.0.1:5000/www/).
+With the current Flask environment settings the browser will then be running at [http://127.0.0.1:5000/www/](http://127.0.0.1:5000/www/).
+
+
+### Building and installing
+
+There is no pip-installable package on PyPI yet, but you can create a source archive and then install it. For building you run the following, which assumes that the Python build utility is installed:
+
+```bash
+python -m build
+```
+
+Then install anywhere by using the created archive:
+
+```bash
+pip install -r PATH_TO_THIS_REPOSITORY/dist/mmif_storage-0.1.0.tar.gz
+```
 
 
 ### Command line scripts
 
-If you have installed the `mmif-storage` package you can also use the command line scripts. Here are a few examples on how to start the Web API:
+If you have installed the `mmif-storage` package you can also use shell commands to start the API or browser. For these commands the environment settings are ignored.
+
+To start the web API:
 
 ```bash
-run_api
-run_api <PATH_TO_DIRECTORY>
-run_api <PATH_TO_DIRECTORY> --port 8001 --reload
+start_api --dir PATH_TO_DIRECTORY --port PORT
 ```
 
-The API uses the current directory as the default MMIF Storage directory, but you can specify any directory. You can also change the port (default is port 8000) and set up the server to reload automatically when something changes in the current directory, notice that such reloading only works out as wished when you start the API from the code directory.
+Both arguments are optional: the default port is 8000 and the default directory is the current directory.
+
+To start the web browser:
+
+```bash
+start_www --dir PATH_TO_DIRECTORY --port PORT
+```
+
+Again both arguments are optional: the default port is 5000 and the default directory is the current directory.

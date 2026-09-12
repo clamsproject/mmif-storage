@@ -11,23 +11,21 @@ Now has the following functionality from the old Flask server:
 Need to add all the search functionality from the Shack, which will require moving
 some code from the clamshack to this repository in mmif_storage.model.
 
-Other things to do:
-- upload now always overwrites old file
-
 """
 
 import os
+import io
 from typing import Dict, List, Any
 
 from pydantic import BaseModel, ConfigDict
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, PlainTextResponse
 
 from mmif import View
 
 import mmif_storage
 from mmif_storage.model import storage, analytics
-from mmif_storage.errors import StorageServerError
+from mmif_storage.errors import StorageServerError, FileExistsWarning
 
 
 app = FastAPI()
@@ -68,29 +66,72 @@ class MmifFile(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
-@app.get('/api/mmif/analytics', tags=['Analytics'])
+@app.get('/', tags=["Intro"])
+def index():
+    """Landing page for the API"""
+    text = \
+        "\nThis is the MMIF Storage API Server.\n\n" \
+        + "Use\n\n    GET /help\n\nfor a list of routes.\n\n"
+    return PlainTextResponse(text)
+
+
+@app.get('/help', tags=["Intro"])
+def help():
+    """Documentation for all routes"""
+    help_string = io.StringIO("")
+    for path_url, path_data in app.openapi()["paths"].items():
+        for key in path_data.keys():
+            help_string.write(f'\n{key.upper()} {path_url}\n')
+            help_string.write(f"\n    {path_data[key].get('description')}\n")
+    help_string.write('\n')
+    return (PlainTextResponse(help_string.getvalue()))
+
+
+@app.get('/analytics', tags=['Analytics'])
 def get_analytics():
     """Return full analytics of the MMIF storage content."""
     return analytics.storage_analytics()
 
 
-@app.get('/api/mmif/paths', tags=['Analytics'])
+@app.get('/paths', tags=['Analytics'])
 def get_paths():
     """Return all workflow paths in the MMIF storage."""
     stats = analytics.storage_analytics()
     return [wf["path"] for wf in stats["workflows"]]
 
 
-@app.post('/api/mmif/peek', tags=['Peek and Search'])
+@app.post('/peek', tags=['Peek and Search'])
 def peek(data: Workflow) -> PeekResult:
+    """Show the workflow identifier for a workflow and show all MMIF files at that
+    workflow identifier."""
     peek_result = storage.peek(data.simplify())
     return PeekResult(
         workflow_id=peek_result['workflow_id'],
         filenames=peek_result['filenames'])
 
 
-@app.post('/api/mmif/download', tags=['Upload and Download'])
+@app.post('/upload', tags=['Upload and Download'])
+async def upload(file: UploadFile, overwrite: bool = False) -> dict:
+    """Upload a MMIF file, creating a landing spot in the storage if needed."""
+    contents = await file.read()
+    try:
+        path = storage.upload_mmif(contents, mmif_storage.config.STORAGE_DIR,
+                                   overwrite=overwrite, binary=True)
+        return {
+            "destination": str(path),
+            "filename": file.filename,
+            "filesize": file.size,
+            "status": "succes" }
+    except FileExistsWarning as e:
+        return { 
+            "warning": "Existing file was not overwritten",
+            "destination": e.path,
+            "filename": file.filename }
+
+
+@app.post('/download', tags=['Upload and Download'])
 def download(request: DownloadRequest) -> MmifFile | list | Any:
+    """Download a MMIF file or a zip file with MMIF files and some housekeeping data."""
     # TODO. The return type is a bit of a mess now. MmifFile is obvious. The second
     # type is for when single file download fails. The third is for when a Zipfile 
     # is returned. I tried StreamingResponse, but that ran into validation errors.
@@ -111,17 +152,16 @@ def download(request: DownloadRequest) -> MmifFile | list | Any:
         return get_mmif_files(workflow_dir, guid, num_views)
 
 
-@app.post('/api/mmif/upload', tags=['Upload and Download'])
-async def upload(file: UploadFile) -> dict:
-    # TODO: needs some error handling
-    # TODO: this claims success even if it fails to upload the file
-    contents = await file.read()
-    path = storage.upload_mmif(contents, overwrite=True, binary=True)
-    return {
-        "destination": str(path),
-        "filename": file.filename,
-        "filesize": file.size,
-        "status": "succes" }
+@app.delete('/delete_path', tags=["Destructive Behavior"])
+def delete():
+    """Delete all data at a workflow path. This also deletes all downstream data."""
+    return PlainTextResponse("Not yet implemented")
+
+
+@app.delete('/empty_storage', tags=["Destructive Behavior"])
+def empty():
+    """Delete all data from the storage."""
+    return PlainTextResponse("Not yet implemented")
 
 
 def get_mmif_file(workflow_id: str, guid: str, num_views: int) -> dict:

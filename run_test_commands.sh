@@ -5,15 +5,15 @@
 
 
 echo '\n>>> ANALYTICS\n'
-curl --silent 'http://127.0.0.1:8000/api/mmif/analytics' -H 'accept: application/json' |jq
+curl --silent 'http://127.0.0.1:8000/analytics' -H 'accept: application/json' |jq
 
 read
 echo '\n\n>>> PATHS\n'
-curl --silent 'http://127.0.0.1:8000/api/mmif/paths' -H 'accept: application/json' | jq
+curl --silent 'http://127.0.0.1:8000/paths' -H 'accept: application/json' | jq
 
 read
 echo '\n\n>>> PEEK\n'
-curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/peek' \
+curl --silent -X POST 'http://127.0.0.1:8000/peek' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -24,14 +24,14 @@ curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/peek' \
 
 read
 echo '\n\n>>> UPLOAD\n'
-curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/upload' \
+curl --silent -X POST 'http://127.0.0.1:8000/upload' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@data/cpb-aacip-f551104e446-clip1.mmif' | jq
 
 read
 echo '\n\n>>> DOWNLOAD FILE - USING WORKFLOW\n'
-curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{ "guid": "cpb-aacip-f551104e446-clip1",
@@ -39,7 +39,7 @@ curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/download' \
 
 read
 echo '\n\n>>> DOWNLOAD FILE - USING WORKFLOW_ID\n'
-curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{"guid": "cpb-aacip-f551104e446-clip1",
@@ -47,7 +47,7 @@ curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/download' \
 
 read
 echo '\n\n>>> DOWNLOAD FILE - FAILURE\n'
-curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{ "guid": "cpb-aacip-f551104e446-clip1",
@@ -55,7 +55,7 @@ curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/download' \
 
 read
 echo '\n\n>>> DOWNLOAD FILES\n'
-curl --silent -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   --output storage-response.zip \

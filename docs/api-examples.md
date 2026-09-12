@@ -6,13 +6,21 @@ We are assuming that that the MMIF Storage API is up and running on port 8000, a
 
 All examples are using curl invocation. If an output is given then it is pretty printed, which in real life you won't get unless you pipe the output through something like the jq utility.
 
+[ <a href=#analytics>analytics</a>
+| <a href=#peeking>peeking</a>
+| <a href=#upload>upload</a>
+| <a href=#download>download</a>
+]
+
+
+<a name=analytics></a>
 
 ## Analytics
 
 To get all analytics:
 
 ```json
-curl -X GET 'http://127.0.0.1:8000/api/mmif/analytics' -H 'accept: application/json'
+curl -X GET 'http://127.0.0.1:8000/analytics' -H 'accept: application/json'
 ```
 ```json
 {
@@ -43,7 +51,7 @@ curl -X GET 'http://127.0.0.1:8000/api/mmif/analytics' -H 'accept: application/j
 To get all paths in the MMIF Storage::
 
 ```json
-curl -X GET 'http://127.0.0.1:8000/api/mmif/paths' -H 'accept: application/json'
+curl -X GET 'http://127.0.0.1:8000/paths' -H 'accept: application/json'
 ```
 
 ```json
@@ -54,12 +62,14 @@ curl -X GET 'http://127.0.0.1:8000/api/mmif/paths' -H 'accept: application/json'
 ```
 
 
+<a name=peeking></a>
+
 ## Peeking
 
 The input is a workflow description. The output is the workflow identifier for the workflow, plus any files at that workflow.
 
 ```json
-curl -X POST 'http://127.0.0.1:8000/api/mmif/peek' \
+curl -X POST 'http://127.0.0.1:8000/peek' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -89,12 +99,14 @@ If you use SwaggerUI you can also simply enter the following:
 ```
 
 
+<a name=upload></a>
+
 ## File upload
 
 In this case (unlike with the other examples) you need to be in the root directory of the repository for it to work since there is a file path in the curl command.
 
 ```json
-curl -X POST 'http://127.0.0.1:8000/api/mmif/upload' \
+curl -X POST 'http://127.0.0.1:8000/upload' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@data/cpb-aacip-f551104e446-clip1.mmif'
@@ -115,8 +127,17 @@ curl -X POST 'http://127.0.0.1:8000/api/mmif/upload' \
 }
 ```
 
-This overwrites an older file if there was one, need to add option to prohibit overwrite.
+The default is to not overwrite an older file if there was one, use the overwrite option to overrule that:
 
+```json
+curl -X POST 'http://127.0.0.1:8000/upload?overwrite=true' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@data/cpb-aacip-f551104e446-clip1.mmif'
+```
+
+
+<a name=download></a>
 
 ## File download
 
@@ -124,7 +145,7 @@ Downloading a single MMIF file. In addition to a workflow this also requires
 an identifier (a GUID in the aapb case). The return value is a MMIF file.
 
 ```json
-curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{ "guid": "cpb-aacip-f551104e446-clip1",
@@ -134,7 +155,7 @@ curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
 Here is one that should not return a MMIF file because the workflow is not in the storage.
 
 ```json
-curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{ "guid": "cpb-aacip-f551104e446-clip1",
@@ -152,7 +173,7 @@ a JSON/MMIF file as above. Note the addition of the --output argument, without i
 
 ```json
 curl \
-  -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+  -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   --output storage-response.zip \
@@ -164,7 +185,7 @@ Using workflow identifiers. As an alternative we can use the workflow identifier
 this works whether the guid value is a string or a list.
 
 ```json
-curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{"guid": "cpb-aacip-f551104e446-clip1",
@@ -172,7 +193,7 @@ curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
 ```
 
 ```json     
-curl -X POST 'http://127.0.0.1:8000/api/mmif/download' \
+curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   --output storage-response.zip \

@@ -5,27 +5,21 @@ import sys
 import json
 import tempfile
 from pathlib import Path
-from dotenv import load_dotenv
 from operator import itemgetter
 
 from flask import Flask, request, jsonify, Blueprint, render_template
 from jinja2 import Template
 
+import mmif_storage
 from mmif_storage.model.analytics import storage_analytics
 from mmif_storage.utils import ServerDirectory, MmifFile, ParameterFile
 from mmif_storage.utils import path_from_workflow_specs, strip_prefix
-
-
-load_dotenv()
 
 
 bp = Blueprint('www', __name__, template_folder='templates')
 
 
 DEBUG = True
-
-
-STORAGE_DIR = os.environ.get('STORAGE_DIR')
 
 
 @bp.get('/www/')
@@ -63,7 +57,7 @@ def search_mmif_post():
         workflow_path = path_from_workflow_specs(
             {"guid": guid, "workflow": json.loads(workflow)})
         debug(f'workflow_path = {workflow_path}')
-        full_workflow_path = os.path.join(os.environ.get('STORAGE_DIR'), workflow_path)
+        full_workflow_path = os.path.join(mmif_storage.config.STORAGE_DIR, workflow_path)
         if not guid:
             # get the files at the workflow path
             status = 'workflow'
@@ -91,14 +85,14 @@ def search_mmif_post():
 
 @bp.get('/www/browse_paths.html')
 def browse_paths():
-    sdir = ServerDirectory(STORAGE_DIR, request.args.get("path"))
+    sdir = ServerDirectory(mmif_storage.config.STORAGE_DIR, request.args.get("path"))
     return render_template('browse_paths.html', sdir=sdir)
 
 
 @bp.get('/www/view_mmif.html')
 def view_file():
     mode = request.args.get("mode")
-    mfile = MmifFile(STORAGE_DIR, Path(request.args.get("path")))
+    mfile = MmifFile(mmif_storage.config.STORAGE_DIR, Path(request.args.get("path")))
     debug(f'mode = {mode}')
     if mode in ('summary', 'collapsible'):
         # Doing this upfront (unlike with the description) to avoid issues with
@@ -160,7 +154,7 @@ def analytics():
     properties = {p: analytics[p] for p in analytics.keys() if p != 'workflows'}
     workflows = sorted(analytics['workflows'], key=itemgetter('path'))
     for workflow in workflows:
-        workflow['full_path'] = Path(STORAGE_DIR) / workflow['path']
+        workflow['full_path'] = Path(mmif_storage.config.STORAGE_DIR) / workflow['path']
     return render_template(
         'analytics.html', properties=properties, workflows=workflows)
 
@@ -173,7 +167,7 @@ class InspectorData:
         self.css_file = Path(inspector.__file__).parent / CSS_PAGE
         self.js_file = Path(inspector.__file__).parent / JS_PAGE
         mmif_file = Path(request.args.get("path"))
-        self.summ_file = Path(STORAGE_DIR) / mmif_file.parent / f'{mmif_file.stem}.summ.json'
+        self.summ_file = Path(mmif_storage.config.STORAGE_DIR) / mmif_file.parent / f'{mmif_file.stem}.summ.json'
 
     @property
     def summary(self):
@@ -208,25 +202,4 @@ def update_rendered(html: str, css_file: Path, js_file: Path = None):
 def debug(message: str):
     if DEBUG:
         print(f'DEBUG {message}')
-
-
-'''
-
-Zero-guid scenario example:
-
-curl -X POST 127.0.0.1:8001/storeapi/download \
-    -H 'Content-Type: "application/json"' \
-    -d '{"workflow": {"chyron-detection/v1.0": {}}}'
-
-Single-guid scenario example:
-
-curl -X POST 127.0.0.1:8001/storeapi/download \
-    -H 'Content-Type: "application/json"' \
-    -d '
-    {
-        "workflow": { "chyron-detection/v1.0": {} },
-        "guid": "cpb-aacip-525-028pc2v94s"
-    }'
-
-'''
 

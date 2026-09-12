@@ -24,8 +24,3 @@ if len(sys.argv) > 1:
     elif sys.argv[1] == 'paths':
         stats = analytics.storage_analytics()
         print_json([wf["path"] for wf in stats["workflows"]])
-
-    elif sys.argv[1] == 'api':
-        if len(sys.argv) > 2:
-            storage.STORAGE_DIR = sys.argv[2]
-        mmif_storage.run_api()

@@ -13,7 +13,8 @@ from mmif.utils.workflow_helper import generate_param_hash
 from mmif.utils.workflow_helper import generate_workflow_identifier
 
 import mmif_storage
-from mmif_storage.errors import StorageServerError, UploadWarning, EmptyMmifWarning
+from mmif_storage.errors import StorageServerError, EmptyMmifWarning
+from mmif_storage.errors import UploadWarning, FileExistsWarning
 
 
 def peek(workflow_data: dict) -> dict:
@@ -29,10 +30,10 @@ def peek(workflow_data: dict) -> dict:
         'filenames': get_files_at_workflow(wfpath)}
 
 
-def upload_mmif(
-    body: str,
-    root: str = mmif_storage.config.STORAGE_DIR,
-    overwrite: str = True, binary=False) -> Path:
+def upload_mmif(body: str,
+                root: str | None = None,
+                overwrite: str = True,
+                binary=False) -> Path:
 
     """Upload the MMIF file in the body to the MMIF storage. Upload includes 
     writing parameter files for the views. Do not overwrite unless overwrite is
@@ -40,7 +41,7 @@ def upload_mmif(
     for any of the boundary cases where an upload will not occur."""
 
     mmif = Mmif(body)
-    cur_root = root
+    cur_root = mmif_storage.config.STORAGE_DIR if root is None else root
     guid = get_guid(mmif)
 
     # Generate the workflow identifier from the MMIF views and retrieve the
@@ -62,9 +63,7 @@ def upload_mmif(
     if not mmif.views:
         raise UploadWarning('Upload file has no view content', path=relative_path)
     if absolute_path.exists() and not overwrite:
-        raise UploadWarning(
-            'Upload file already exists, use overwrite=True if you want to overwrite.',
-            path=relative_path)
+        raise FileExistsWarning(path=relative_path)
 
     mode = 'wb' if binary else 'w'
     with open(absolute_path, mode) as f:

@@ -13,8 +13,14 @@ dynamic = ["dependencies"]
 start_api = "mmif_storage:start_api"
 start_www = "mmif_storage:start_www"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["./src"]
+
+[tool.setuptools.package-data]
+mmif_storage = ["templates/*", "static/*", "static/**/*"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
