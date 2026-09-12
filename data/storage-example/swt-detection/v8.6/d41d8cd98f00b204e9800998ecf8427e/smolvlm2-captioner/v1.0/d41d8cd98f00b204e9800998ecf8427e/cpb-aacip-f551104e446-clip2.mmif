@@ -1,0 +1,555 @@
+{
+  "metadata": {
+    "mmif": "http://mmif.clams.ai/1.1.1"
+  },
+  "documents": [
+    {
+      "@type": "http://clams.ai/vocabulary/type/VideoDocument/v2",
+      "properties": {
+        "mime": "video/mp4",
+        "id": "d1",
+        "location": "file:///data/public/video/cpb-aacip-f551104e446-clip2.mp4"
+      }
+    }
+  ],
+  "views": [
+    {
+      "id": "v_0",
+      "metadata": {
+        "appProfiling": {
+          "runningTime": "0:00:01.993675"
+        },
+        "timestamp": "2026-06-20T13:01:24.161860",
+        "app": "http://apps.clams.ai/swt-detection/v8.6",
+        "contains": {
+          "http://clams.ai/vocabulary/type/TimePoint/v5": {
+            "document": "d1",
+            "timeUnit": "milliseconds",
+            "labelset": [
+              "GLOTW",
+              "CR",
+              "IN",
+              "KU",
+              "B",
+              "S",
+              "M",
+              "Y",
+              "F",
+              "E",
+              "P",
+              "-"
+            ]
+          }
+        },
+        "appConfiguration": {
+          "useClassifier": true,
+          "tpModelName": "convnextv2_tiny",
+          "tpModelBatchSize": 200,
+          "tpUsePosModel": true,
+          "tpStartAt": 0,
+          "tpStopAt": 9223372036854775807,
+          "tpSampleRate": 1000,
+          "useStitcher": true,
+          "tfMinTPScore": 0.5,
+          "tfMinTFScore": 0.9,
+          "tfMinTFDuration": 5000,
+          "tfAllowOverlap": false,
+          "tfDynamicSceneLabels": [
+            "credit",
+            "credits"
+          ],
+          "tfLabelMap": {
+            "B": "Bars",
+            "S": "Slate",
+            "Y": "Chyron",
+            "KU": "Chyron",
+            "IN": "Chyron",
+            "CR": "Credits",
+            "GLOTW": "Other-text",
+            "F": "Other-text",
+            "E": "Other-text",
+            "M": "Other-text",
+            "P": "Neg",
+            "-": "Neg"
+          },
+          "tfLabelMapPreset": "relaxed",
+          "pretty": false,
+          "runningTime": true,
+          "hwFetch": false,
+          "tfSamplingMode": "representatives"
+        }
+      },
+      "annotations": [
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 0,
+            "label": "P",
+            "classification": {
+              "GLOTW": 0.004885021131485701,
+              "CR": 0.0001108928699977696,
+              "IN": 0.024350447580218315,
+              "KU": 8.032751065911725e-05,
+              "B": 2.9390665076789446e-05,
+              "S": 5.554384915740229e-05,
+              "M": 0.0006462288438342512,
+              "Y": 8.761212666286156e-05,
+              "F": 0.0024226291570812464,
+              "E": 0.0846300721168518,
+              "P": 0.8493959307670593,
+              "-": 0.03330593183636665
+            },
+            "id": "v_0:tp_1"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 1004,
+            "label": "P",
+            "classification": {
+              "GLOTW": 0.002332448260858655,
+              "CR": 3.3526575862197205e-05,
+              "IN": 0.016070382669568062,
+              "KU": 1.3738051166001242e-05,
+              "B": 6.430175290006446e-06,
+              "S": 1.0591460522846319e-05,
+              "M": 0.00034667921136133373,
+              "Y": 4.286045441403985e-05,
+              "F": 0.0012792943743988872,
+              "E": 0.026860114187002182,
+              "P": 0.9242571592330933,
+              "-": 0.028746729716658592
+            },
+            "id": "v_0:tp_2"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 2008,
+            "label": "P",
+            "classification": {
+              "GLOTW": 0.0006969689857214689,
+              "CR": 1.6242516721831635e-05,
+              "IN": 0.012976200319826603,
+              "KU": 3.8648299778287765e-06,
+              "B": 7.724087822680303e-07,
+              "S": 1.5626735603291309e-06,
+              "M": 5.8837304095504805e-05,
+              "Y": 1.6667625459376723e-05,
+              "F": 0.0004904933157376945,
+              "E": 0.006276341155171394,
+              "P": 0.9672096967697144,
+              "-": 0.012252245098352432
+            },
+            "id": "v_0:tp_3"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 3012,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.0027008785400539637,
+              "CR": 7.81324997660704e-05,
+              "IN": 0.9160367846488953,
+              "KU": 0.0028408444486558437,
+              "B": 9.645636964705773e-07,
+              "S": 1.239028188138036e-05,
+              "M": 0.0001332997198915109,
+              "Y": 0.0005793893942609429,
+              "F": 0.00011414360051276162,
+              "E": 0.025298062711954117,
+              "P": 0.051465217024087906,
+              "-": 0.0007398773450404406
+            },
+            "id": "v_0:tp_4"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 4016,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.0037100634071975946,
+              "CR": 7.425553485518321e-05,
+              "IN": 0.9013327956199646,
+              "KU": 0.003231332404538989,
+              "B": 1.1817494396382244e-06,
+              "S": 1.691858960839454e-05,
+              "M": 0.00017635022231843323,
+              "Y": 0.0006536974105983973,
+              "F": 0.00016404730558861047,
+              "E": 0.03743283078074455,
+              "P": 0.05234307795763016,
+              "-": 0.0008635511621832848
+            },
+            "id": "v_0:tp_5"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 5020,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.002964329207316041,
+              "CR": 7.061882934067398e-05,
+              "IN": 0.8603623509407043,
+              "KU": 0.0020210514776408672,
+              "B": 7.812342346369405e-07,
+              "S": 9.702706847747322e-06,
+              "M": 0.00010743826715042815,
+              "Y": 0.0005737846367992461,
+              "F": 0.0002577823761384934,
+              "E": 0.056910429149866104,
+              "P": 0.07574333995580673,
+              "-": 0.0009783657733350992
+            },
+            "id": "v_0:tp_6"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 6024,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.0033932586666196585,
+              "CR": 5.222697654971853e-05,
+              "IN": 0.8046762943267822,
+              "KU": 0.0019771072547882795,
+              "B": 3.927266334358137e-07,
+              "S": 6.766336809960194e-06,
+              "M": 9.257315832655877e-05,
+              "Y": 0.0005427735741250217,
+              "F": 0.0002922351413872093,
+              "E": 0.13251546025276184,
+              "P": 0.05562618374824524,
+              "-": 0.0008246956276707351
+            },
+            "id": "v_0:tp_7"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 7028,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.0015894175739958882,
+              "CR": 4.765220364788547e-05,
+              "IN": 0.9233368039131165,
+              "KU": 0.0012410618364810944,
+              "B": 2.1589465859506163e-07,
+              "S": 3.243138053221628e-06,
+              "M": 4.9821486754808575e-05,
+              "Y": 0.0003719712549354881,
+              "F": 8.321358473040164e-05,
+              "E": 0.02175571769475937,
+              "P": 0.051089152693748474,
+              "-": 0.00043170151184313
+            },
+            "id": "v_0:tp_8"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 8032,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.001090683159418404,
+              "CR": 3.427611954975873e-05,
+              "IN": 0.9497775435447693,
+              "KU": 0.0012985843932256103,
+              "B": 7.037568394707705e-08,
+              "S": 1.6256921071544639e-06,
+              "M": 3.165355883538723e-05,
+              "Y": 0.0002741615171544254,
+              "F": 4.237511529936455e-05,
+              "E": 0.018284404650330544,
+              "P": 0.028953956440091133,
+              "-": 0.00021054416720289737
+            },
+            "id": "v_0:tp_9"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 9003,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.0019838036969304085,
+              "CR": 5.78842154936865e-05,
+              "IN": 0.9050105810165405,
+              "KU": 0.0018911524675786495,
+              "B": 2.5361353550579224e-07,
+              "S": 4.777853519044584e-06,
+              "M": 7.548589928774163e-05,
+              "Y": 0.00039230703259818256,
+              "F": 0.00011812771845143288,
+              "E": 0.048965997993946075,
+              "P": 0.041053518652915955,
+              "-": 0.0004461438802536577
+            },
+            "id": "v_0:tp_10"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 10007,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.0024014185182750225,
+              "CR": 9.425517055206001e-05,
+              "IN": 0.9038906693458557,
+              "KU": 0.003746186615899205,
+              "B": 5.730292400585313e-07,
+              "S": 8.46966759127099e-06,
+              "M": 9.073244291357696e-05,
+              "Y": 0.0006109844543971121,
+              "F": 0.0001540939847473055,
+              "E": 0.0401834174990654,
+              "P": 0.04816159978508949,
+              "-": 0.0006575793959200382
+            },
+            "id": "v_0:tp_11"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 11011,
+            "label": "IN",
+            "classification": {
+              "GLOTW": 0.0017998249968513846,
+              "CR": 6.19360725977458e-05,
+              "IN": 0.9308806657791138,
+              "KU": 0.002343180123716593,
+              "B": 2.551721820509556e-07,
+              "S": 4.396646090754075e-06,
+              "M": 7.070482388371602e-05,
+              "Y": 0.000490529288072139,
+              "F": 8.701654587639496e-05,
+              "E": 0.027569351717829704,
+              "P": 0.036279983818531036,
+              "-": 0.00041213867370970547
+            },
+            "id": "v_0:tp_12"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 12015,
+            "label": "P",
+            "classification": {
+              "GLOTW": 0.001460487605072558,
+              "CR": 3.177763210260309e-05,
+              "IN": 0.011484596878290176,
+              "KU": 8.469336535199545e-06,
+              "B": 1.2409508372002165e-06,
+              "S": 3.273132961112424e-06,
+              "M": 0.00010229467443423346,
+              "Y": 4.4357740989653394e-05,
+              "F": 0.001898487564176321,
+              "E": 0.02950240671634674,
+              "P": 0.9282752275466919,
+              "-": 0.0271874088793993
+            },
+            "id": "v_0:tp_13"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 13019,
+            "label": "P",
+            "classification": {
+              "GLOTW": 0.0011438500368967652,
+              "CR": 2.7510530344443396e-05,
+              "IN": 0.009512241929769516,
+              "KU": 6.340293566609034e-06,
+              "B": 1.0947707096420345e-06,
+              "S": 2.702631036299863e-06,
+              "M": 8.093539508990943e-05,
+              "Y": 2.8417174689820968e-05,
+              "F": 0.0013779416913166642,
+              "E": 0.02034684270620346,
+              "P": 0.9434195160865784,
+              "-": 0.024052562192082405
+            },
+            "id": "v_0:tp_14"
+          }
+        },
+        {
+          "@type": "http://clams.ai/vocabulary/type/TimePoint/v5",
+          "properties": {
+            "timePoint": 14023,
+            "label": "P",
+            "classification": {
+              "GLOTW": 0.0011021210812032223,
+              "CR": 3.356075831106864e-05,
+              "IN": 0.010367856360971928,
+              "KU": 8.123276529659051e-06,
+              "B": 1.2484540548030054e-06,
+              "S": 3.17089211421262e-06,
+              "M": 8.054385398281738e-05,
+              "Y": 2.3772692657075822e-05,
+              "F": 0.0012062924215570092,
+              "E": 0.02298709936439991,
+              "P": 0.9454136490821838,
+              "-": 0.018772553652524948
+            },
+            "id": "v_0:tp_15"
+          }
+        }
+      ]
+    },
+    {
+      "id": "v_1",
+      "metadata": {
+        "appProfiling": {
+          "runningTime": "0:00:01.993675"
+        },
+        "timestamp": "2026-06-20T13:01:24.161860",
+        "app": "http://apps.clams.ai/swt-detection/v8.6",
+        "contains": {
+          "http://clams.ai/vocabulary/type/Annotation/v6": {
+            "document": "d1"
+          }
+        },
+        "appConfiguration": {
+          "useClassifier": true,
+          "tpModelName": "convnextv2_tiny",
+          "tpModelBatchSize": 200,
+          "tpUsePosModel": true,
+          "tpStartAt": 0,
+          "tpStopAt": 9223372036854775807,
+          "tpSampleRate": 1000,
+          "useStitcher": true,
+          "tfMinTPScore": 0.5,
+          "tfMinTFScore": 0.9,
+          "tfMinTFDuration": 5000,
+          "tfAllowOverlap": false,
+          "tfDynamicSceneLabels": [
+            "credit",
+            "credits"
+          ],
+          "tfLabelMap": {
+            "B": "Bars",
+            "S": "Slate",
+            "Y": "Chyron",
+            "KU": "Chyron",
+            "IN": "Chyron",
+            "CR": "Credits",
+            "GLOTW": "Other-text",
+            "F": "Other-text",
+            "E": "Other-text",
+            "M": "Other-text",
+            "P": "Neg",
+            "-": "Neg"
+          },
+          "tfLabelMapPreset": "relaxed",
+          "pretty": false,
+          "runningTime": true,
+          "hwFetch": false,
+          "tfSamplingMode": "representatives"
+        }
+      },
+      "annotations": [
+        {
+          "@type": "http://clams.ai/vocabulary/type/Annotation/v6",
+          "properties": {
+            "fps": 29.88,
+            "frameCount": 597,
+            "duration": 15003,
+            "id": "v_1:an_1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "v_2",
+      "metadata": {
+        "appProfiling": {
+          "runningTime": "0:00:01.993675"
+        },
+        "timestamp": "2026-06-20T13:01:24.161860",
+        "app": "http://apps.clams.ai/swt-detection/v8.6",
+        "appConfiguration": {
+          "useClassifier": true,
+          "tpModelName": "convnextv2_tiny",
+          "tpModelBatchSize": 200,
+          "tpUsePosModel": true,
+          "tpStartAt": 0,
+          "tpStopAt": 9223372036854775807,
+          "tpSampleRate": 1000,
+          "useStitcher": true,
+          "tfMinTPScore": 0.5,
+          "tfMinTFScore": 0.9,
+          "tfMinTFDuration": 5000,
+          "tfAllowOverlap": false,
+          "tfDynamicSceneLabels": [
+            "credit",
+            "credits"
+          ],
+          "tfLabelMap": {},
+          "tfLabelMapPreset": "relaxed",
+          "pretty": false,
+          "runningTime": true,
+          "hwFetch": false,
+          "tfSamplingMode": "representatives"
+        },
+        "warnings": [
+          "{message : DeprecationWarning(\"capture() is deprecated; use open_container() instead. Frame-number arithmetic ignores the video container's PTS start offset, so the returned frame can be misaligned by however many frames that offset spans (see issue #379).\"), category : 'DeprecationWarning', filename : '/app/app.py', lineno : 92, line : None}",
+          "{message : DeprecationWarning(\"millisecond_to_framenum() is deprecated. Frame-number arithmetic ignores the video container's PTS start offset, so the returned frame can be misaligned by however many frames that offset spans (see issue #379).\"), category : 'DeprecationWarning', filename : '/app/app.py', lineno : 99, line : None}",
+          "{message : DeprecationWarning(\"sample_frames() is deprecated; use sample_timepoints() instead. Frame-number arithmetic ignores the video container's PTS start offset, so the returned frame can be misaligned by however many frames that offset spans (see issue #379).\"), category : 'DeprecationWarning', filename : '/app/app.py', lineno : 100, line : None}",
+          "{message : DeprecationWarning(\"extract_frames_as_images() is deprecated; use extract_images_from_timepoints() instead. Frame-number arithmetic ignores the video container's PTS start offset, so the returned frame can be misaligned by however many frames that offset spans (see issue #379).\"), category : 'DeprecationWarning', filename : '/app/app.py', lineno : 124, line : None}",
+          "{message : UserWarning('Frame #449 (15.026773761713521s) could not be read from the video d1 @ file:///data/public/video/cpb-aacip-f551104e446-clip2.mp4 .'), category : 'UserWarning', filename : '/usr/local/lib/python3.10/site-packages/mmif/utils/video_document_helper.py', lineno : 677, line : None}",
+          "{message : UserWarning('Frame #479 (16.03078982597055s) could not be read from the video d1 @ file:///data/public/video/cpb-aacip-f551104e446-clip2.mp4 .'), category : 'UserWarning', filename : '/usr/local/lib/python3.10/site-packages/mmif/utils/video_document_helper.py', lineno : 677, line : None}",
+          "{message : UserWarning('Frame #508 (17.001338688085678s) could not be read from the video d1 @ file:///data/public/video/cpb-aacip-f551104e446-clip2.mp4 .'), category : 'UserWarning', filename : '/usr/local/lib/python3.10/site-packages/mmif/utils/video_document_helper.py', lineno : 677, line : None}",
+          "{message : UserWarning('Frame #538 (18.005354752342704s) could not be read from the video d1 @ file:///data/public/video/cpb-aacip-f551104e446-clip2.mp4 .'), category : 'UserWarning', filename : '/usr/local/lib/python3.10/site-packages/mmif/utils/video_document_helper.py', lineno : 677, line : None}",
+          "{message : UserWarning('Frame #568 (19.009370816599734s) could not be read from the video d1 @ file:///data/public/video/cpb-aacip-f551104e446-clip2.mp4 .'), category : 'UserWarning', filename : '/usr/local/lib/python3.10/site-packages/mmif/utils/video_document_helper.py', lineno : 677, line : None}"
+        ]
+      },
+      "annotations": []
+    },
+    {
+      "id": "v_3",
+      "metadata": {
+        "appProfiling": {
+          "runningTime": "0:00:00.162101"
+        },
+        "timestamp": "2026-06-20T13:02:29.736000",
+        "app": "http://apps.clams.ai/smolvlm2-captioner/v1.0",
+        "appConfiguration": {
+          "tfLabels": [],
+          "prompt": [
+            "You are looking at one or more frames sampled from a single segment of a news video. Describe what is shown, the purpose of this segment in the broader news video, and transcribe any visible text. Produce one consolidated caption across all provided frames."
+          ],
+          "systemPrompt": "",
+          "promptMode": "turn-taking",
+          "maxNewTokens": 200,
+          "temperature": 0.0,
+          "topP": 1.0,
+          "topK": 50,
+          "parallelPrompts": 1,
+          "model": "HuggingFaceTB/SmolVLM2-2.2B-Instruct@482adb5",
+          "pretty": false,
+          "runningTime": true,
+          "hwFetch": false,
+          "tfSamplingMode": "representatives"
+        },
+        "contains": {}
+      },
+      "annotations": []
+    }
+  ]
+}
