@@ -24,8 +24,8 @@ curl -X GET 'http://127.0.0.1:8000/analytics' -H 'accept: application/json'
 ```
 ```json
 {
-  "total_mmif_files": 4,
-  "total_workflows": 2,
+  "total_mmif_files": 6,
+  "total_workflows": 3,
   "workflows": [
     {
       "path": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
@@ -41,9 +41,20 @@ curl -X GET 'http://127.0.0.1:8000/analytics' -H 'accept: application/json'
         "smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e": {}
       },
       "mmif_count": 2
+    },
+    {
+      "path": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e/spacy-wrapper/v2.3/5fe49d06725497b274b6eaaf0fe0c5d2",
+      "spec": {
+        "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e": {},
+        "smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e": {},
+        "spacy-wrapper/v2.3/5fe49d06725497b274b6eaaf0fe0c5d2": {
+          "pretty": "True"
+        }
+      },
+      "mmif_count": 2
     }
   ],
-  "non_terminal_mmif_count": 2,
+  "non_terminal_mmif_count": 4,
   "dirty_workflow_mmif_count": 0
 }
 ```
@@ -57,7 +68,8 @@ curl -X GET 'http://127.0.0.1:8000/paths' -H 'accept: application/json'
 ```json
 [
   "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
-  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e"
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e",
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e/spacy-wrapper/v2.3/5fe49d06725497b274b6eaaf0fe0c5d2"
 ]
 ```
 
@@ -149,7 +161,20 @@ curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{ "guid": "cpb-aacip-f551104e446-clip1",
-        "workflow": {"swt-detection/v8.6": {}}}'
+        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {}}]}'
+```
+
+Workflows can be more complicated:
+
+```json
+curl -X POST 'http://127.0.0.1:8000/download' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{ "guid": "cpb-aacip-f551104e446-clip1",
+        "workflow": [
+          {"app": "swt-detection", "version": "v8.6", "properties": {}},
+          {"app": "smolvlm2-captioner", "version": "v1.0", "properties": {}},
+          {"app": "spacy-wrapper", "version": "v2.3", "properties": {"pretty": "True"}} ]}'
 ```
 
 Here is one that should not return a MMIF file because the workflow is not in the storage.
@@ -159,7 +184,7 @@ curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{ "guid": "cpb-aacip-f551104e446-clip1",
-        "workflow": {"swt-detection/v8.6": {"Pretty": "True"}}}'
+        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {"Pretty": "True"}}]}'
 ```
 ```json
 {
@@ -178,7 +203,7 @@ curl \
   -H 'Content-Type: application/json' \
   --output storage-response.zip \
   -d '{ "guid": ["cpb-aacip-f551104e446-clip1"],
-        "workflow": {"swt-detection/v8.6": {}}}'
+        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {}}]}'
 ```
 
 Using workflow identifiers. As an alternative we can use the workflow identifier,

@@ -30,12 +30,19 @@ curl --silent -X POST 'http://127.0.0.1:8000/upload' \
   -F 'file=@data/cpb-aacip-f551104e446-clip1.mmif' | jq
 
 read
+echo '\n\n>>> UPLOAD - REPEATED\n'
+curl --silent -X POST 'http://127.0.0.1:8000/upload' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@data/cpb-aacip-f551104e446-clip1.mmif' | jq
+
+read
 echo '\n\n>>> DOWNLOAD FILE - USING WORKFLOW\n'
 curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{ "guid": "cpb-aacip-f551104e446-clip1",
-        "workflow": {"swt-detection/v8.6": {}}}' | wc
+        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {}}]}' | wc
 
 read
 echo '\n\n>>> DOWNLOAD FILE - USING WORKFLOW_ID\n'
@@ -46,12 +53,24 @@ curl --silent -X POST 'http://127.0.0.1:8000/download' \
        "workflow_id": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e"}' | wc
 
 read
+echo '\n\n>>> DOWNLOAD FILE - USING MORE COMPLICATED WORKFLOW\n'
+curl --silent -X POST 'http://127.0.0.1:8000/download' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{ "guid": "cpb-aacip-f551104e446-clip1",
+        "workflow": [
+          {"app": "swt-detection", "version": "v8.6", "properties": {}},
+          {"app": "smolvlm2-captioner", "version": "v1.0", "properties": {}},
+          {"app": "spacy-wrapper", "version": "v2.3", "properties": {"pretty": "True"}} ]
+      }' | wc
+
+read
 echo '\n\n>>> DOWNLOAD FILE - FAILURE\n'
 curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{ "guid": "cpb-aacip-f551104e446-clip1",
-        "workflow": {"swt-detection/v8.6": {"Pretty": "True"}}}' | jq
+        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {"Pretty": "True"}}]}' | jq
 
 read
 echo '\n\n>>> DOWNLOAD FILES\n'
@@ -59,8 +78,8 @@ curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   --output storage-response.zip \
-  -d '{ "guid": ["cpb-aacip-f551104e446-clip1"],
-        "workflow": {"swt-detection/v8.6": {}}}' | jq
+ -d '{ "guid": ["cpb-aacip-f551104e446-clip1"],
+        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {}}]}' | jq
 ls -al *zip
 
 echo '\n'

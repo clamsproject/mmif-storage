@@ -25,7 +25,7 @@ from mmif import View
 
 import mmif_storage
 from mmif_storage.model import storage, analytics
-from mmif_storage.errors import StorageServerError, FileExistsWarning
+from mmif_storage.errors import DownloadWarning, FileExistsWarning
 
 
 app = FastAPI()
@@ -40,11 +40,6 @@ class WorkflowItem(BaseModel):
 class Workflow(BaseModel):
     workflow: List[WorkflowItem]
 
-    def simplify(self) -> dict:
-        """Translate the workflow object into the kind of representation needed by
-        storage.peek()."""
-        return { f'{item.app}/{item.version}': item.properties for item in self.workflow }
-
 
 class PeekResult(BaseModel):
     workflow_id: str
@@ -54,8 +49,15 @@ class PeekResult(BaseModel):
 class DownloadRequest(BaseModel):
     guid: str | list[str]
     workflow_id: str | None = None
-    workflow: dict | None = []
-    #workflow: List[WorkflowItem] | None
+    workflow: List[WorkflowItem] | None = []
+
+
+class DownloadFileRequest(DownloadRequest):
+    guid: str
+
+
+class DownloadFilesRequest(DownloadRequest):
+    guid: list[str]
 
 
 class MmifFile(BaseModel):
@@ -104,7 +106,7 @@ def get_paths():
 def peek(data: Workflow) -> PeekResult:
     """Show the workflow identifier for a workflow and show all MMIF files at that
     workflow identifier."""
-    peek_result = storage.peek(data.simplify())
+    peek_result = storage.peek(data.workflow)
     return PeekResult(
         workflow_id=peek_result['workflow_id'],
         filenames=peek_result['filenames'])
@@ -121,35 +123,62 @@ async def upload(file: UploadFile, overwrite: bool = False) -> dict:
             "destination": str(path),
             "filename": file.filename,
             "filesize": file.size,
-            "status": "succes" }
+            "status": "file-uploaded" }
     except FileExistsWarning as e:
         return { 
-            "warning": "Existing file was not overwritten",
             "destination": e.path,
-            "filename": file.filename }
+            "filesize": file.size,
+            "filename": file.filename,
+            "status": "file-not-uploaded",
+            "message": "Existing file was not overwritten"}
 
 
 @app.post('/download', tags=['Upload and Download'])
-def download(request: DownloadRequest) -> MmifFile | list | Any:
-    """Download a MMIF file or a zip file with MMIF files and some housekeeping data."""
-    # TODO. The return type is a bit of a mess now. MmifFile is obvious. The second
-    # type is for when single file download fails. The third is for when a Zipfile 
-    # is returned. I tried StreamingResponse, but that ran into validation errors.
-    if request.workflow_id is not None:
-        # TODO: maybe add a check that the value is an existing workflow
-        wfid = request.workflow_id
+def download(request: DownloadRequest):
+    """Download a serialized MMIF file or a zip file with MMIF files and some
+    housekeeping data. This is an older route that combines the functionalities
+    of the newer /download_file and /download_files routes."""
+    if isinstance(request.guid, str):
+        return download_file(request)
     else:
-        wfid = storage.generate_workflow_identifier_from_workflow_data(request.workflow)
+        return download_files(request)
+
+
+@app.post('/download_file', tags=['Upload and Download'])
+def download_file(request: DownloadFileRequest):
+    """Download a serialized MMIF file given a single identifier and a workflow
+    identifier or a workflow description."""
+    wfid = _get_workflow_id(request)
+    num_views = len(request.workflow)
+    guid = request.guid
+    if not wfid:
+        return jsonify({'error': 'Missing required parameters: need at least a workflow'})
+    # Return the MMIF object (as a dictionary) for a workflow and a single file
+    # identifier. If there is no such MMIF file return a dictionary with an error
+    # message.
+    try:
+        return PlainTextResponse(storage.get_mmif_file(wfid, guid, num_views))
+    except DownloadWarning as e:
+        return {"DownloadWarning": str(e)}
+
+
+@app.post('/download_files', tags=['Upload and Download'])
+def download_files(request: DownloadFilesRequest):
+    """Download a zip file with MMIF files and some housekeeping data."""
+    wfid = _get_workflow_id(request)
     num_views = len(request.workflow)
     guid = request.guid
     workflow_dir = os.path.join(mmif_storage.config.STORAGE_DIR, wfid)
     if not wfid:
-        # TODO: does this make sense?
         return jsonify({'error': 'Missing required parameters: need at least a workflow'})
-    if isinstance(guid, str):
-        return get_mmif_file(workflow_dir, guid, num_views)
-    elif isinstance(guid, list):
-        return get_mmif_files(workflow_dir, guid, num_views)
+    return get_mmif_files(workflow_dir, guid, num_views)
+
+
+def _get_workflow_id(request: DownloadRequest) -> str:
+    if request.workflow_id is not None:
+        return request.workflow_id
+    else:
+        return storage.generate_identifier_from_workflow(request.workflow)
 
 
 @app.delete('/delete_path', tags=["Destructive Behavior"])
@@ -164,26 +193,11 @@ def empty():
     return PlainTextResponse("Not yet implemented")
 
 
-def get_mmif_file(workflow_id: str, guid: str, num_views: int) -> dict:
-    """
-    Return the MMIF object (as a dictionary) for a workflow and a single file
-    identifier. If there is no such MMIF file return a dictionary with an error
-    message.
-    """
-    try:
-        return storage.get_mmif_for_guid(workflow_id, guid, num_views)
-    except StorageServerError as e:
-        return {"warning": str(e)}
-
-
 def get_mmif_files(workflow_id: str, guids: list, num_views: int):
     """
     When retrieving multiple MMIFs for a workflow, we return a zip file.
 
-    The user will need to add '--output <FILE>' arg to the curl request, which
-    seems to be needed even with the use of download_name below. In fact, that
-    parameter does not seem to be needed when using --output. Need to look into
-    this a bit.
+    The user will need to add '--output <FILE>' arg to the curl request.
     """
     mem_file = storage.create_zipfile(workflow_id, guids)
     return StreamingResponse(mem_file, media_type="application/octet-stream")

@@ -8,19 +8,21 @@ from typing import Union
 from flask import jsonify
 
 from clams_utils.aapb import guidhandler
-from mmif import Mmif
+from mmif import Mmif, utils
 from mmif.utils.workflow_helper import generate_param_hash
 from mmif.utils.workflow_helper import generate_workflow_identifier
 
 import mmif_storage
-from mmif_storage.errors import StorageServerError, EmptyMmifWarning
+from mmif_storage.errors import DownloadWarning, EmptyMmifWarning
 from mmif_storage.errors import UploadWarning, FileExistsWarning
 
 
-def peek(workflow_data: dict) -> dict:
+def peek(workflow_data: list) -> dict:
     """Return a dictionary with a workflow identifier and a list of files at that
-    workflow. Return a warning if no workflow identifier could be created."""
-    wfid = generate_workflow_identifier_from_workflow_data(workflow_data)
+    workflow. Return a warning if no workflow identifier could be created. The
+    input is a list of workflow items, either as defined in the mmif_storage.api
+    module or as any object with app, version and properties variables."""
+    wfid = generate_identifier_from_workflow(workflow_data)
     if not wfid:
         return {
             'warning': 'Could not build a workflow identifier from the input given.'}
@@ -106,17 +108,17 @@ def write_parameters(root: str, wfid: str, param_dicts: list):
             json.dump(param_dicts[i // 3], f, indent=2)
 
 
-def get_mmif_for_guid(workflow_id: str, identifier: str, num_views: int) -> str:
+def get_mmif_file(workflow_id: str, identifier: str, num_views: int) -> str:
     """
     Retrieve the MMIF file for a workflow and an identifier. If none was found
-    raise a StorageServerError.
+    raise a DownloadWarning.
     """
     fname = identifier + ".mmif"
-    path = os.path.join(workflow_id, fname)
+    path = os.path.join(mmif_storage.config.STORAGE_DIR, workflow_id, fname)
     # If the filepath exists, we return the content
     try:
         with open(path, 'r') as file:
-            return json.loads(file.read())
+            return file.read()
     # Otherwise we use the rewinder to check if the user provided a prefix of a
     # mmif workflow that we have previously stored.
     except FileNotFoundError:
@@ -125,7 +127,7 @@ def get_mmif_for_guid(workflow_id: str, identifier: str, num_views: int) -> str:
         except FileNotFoundError:
             # The rewinder does not always succeed so we catch this exception
             # again and raise an application-specific exception.
-            raise StorageServerError(f'Did not find: {fname.split(".")[0]}')
+            raise DownloadWarning(f'Did not find: {fname.split(".")[0]}')
 
 
 def rewind_time(workflow_id, guid, num_views) -> str:
@@ -135,6 +137,7 @@ def rewind_time(workflow_id, guid, num_views) -> str:
     the first mmif file that matches the guid and uses the rewind feature to include
     only the views indicated by the workflow.
     """
+    # TODO: this should fail given it doesn't know where the storage directory is
     for home, dirs, files in os.walk(workflow_id):
         # find mmif with matching guid to rewind
         for file in files:
@@ -183,12 +186,12 @@ def create_zipfile(workflow_id: str, guids: list) -> BytesIO:
     return mem_file
 
 
-def generate_workflow_identifier_from_workflow_data(data: dict) -> str:
+def generate_identifier_from_workflow(data: list) -> str:
     """
     Build the relative workflow storage path from the request's JSON data. For
-    example, with input like
+    example, with input data like
 
-        {"workflow": {"swt-detection/v2.0": {"pretty": "True"}}}
+        [{"app": "swt-detection", "version": "v2.0", "properties": {"pretty": "True"}}]
 
     this function should return
 
@@ -199,7 +202,9 @@ def generate_workflow_identifier_from_workflow_data(data: dict) -> str:
     workflow_helper module.
     """
     wfid_segments = []
-    for clams_app, params in data.items():
+    for n, workflow_item in enumerate(data):
+        clams_app = f"{workflow_item.app}/{workflow_item.version}"
+        params = workflow_item.properties
         try:
             param_hash = generate_param_hash(params)
         except AttributeError:

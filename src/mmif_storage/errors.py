@@ -1,9 +1,9 @@
 
-class StorageServerError(Exception):
+class StorageWarning(Exception):
     pass
 
 
-class StorageWarning(Warning):
+class DownloadWarning(StorageWarning):
     pass
 
 
