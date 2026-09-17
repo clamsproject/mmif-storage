@@ -199,5 +199,5 @@ def get_mmif_files(workflow_id: str, guids: list, num_views: int):
 
     The user will need to add '--output <FILE>' arg to the curl request.
     """
-    mem_file = storage.create_zipfile(workflow_id, guids)
+    mem_file = storage.get_mmif_files(workflow_id, guids)
     return StreamingResponse(mem_file, media_type="application/octet-stream")

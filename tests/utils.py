@@ -1,4 +1,19 @@
 import pathlib
+import shutil
+import pytest
+import mmif_storage
+
+from config import locations
+
+
+@pytest.fixture(scope='session')
+def environment(request):
+    """Create the test storage directory and set the storage directory in the 
+    storage configuration."""
+    shutil.rmtree(locations.storage_test, ignore_errors=True)
+    mmif_storage.config.STORAGE_DIR = locations.storage_test
+    copy_files(locations.file_list, locations.storage_source, locations.storage_test)
+    yield locations
 
 
 def copy_files(file_list: str, indir: str, outdir: str):

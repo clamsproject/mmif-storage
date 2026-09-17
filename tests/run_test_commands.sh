@@ -1,8 +1,8 @@
 # Script that runs a bunch of commands.
 #
 # Assumes that the jq utility is installed.
-# Assumes an API running on port 8000 and the MMIF data in data/storage-example.
-
+# Assumes an API running on port 8000 using the MMIF data in data/storage-example.
+# Probably a wee deprecated since we have tests set up.
 
 echo '\n>>> ANALYTICS\n'
 curl --silent 'http://127.0.0.1:8000/analytics' -H 'accept: application/json' |jq
@@ -18,9 +18,8 @@ curl --silent -X POST 'http://127.0.0.1:8000/peek' \
   -H 'Content-Type: application/json' \
   -d '{
   "workflow": [
-    { "app": "swt-detection", "version": "v8.6", "properties": {} },
-    { "app": "smolvlm2-captioner", "version": "v1.0", "properties": {} } ]
-}' | jq
+    {"app": "swt-detection", "version": "v8.6", "properties": {}},
+    {"app": "smolvlm2-captioner", "version": "v1.0", "properties": {}}]}' | jq
 
 read
 echo '\n\n>>> UPLOAD\n'
@@ -41,8 +40,8 @@ echo '\n\n>>> DOWNLOAD FILE - USING WORKFLOW\n'
 curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{ "guid": "cpb-aacip-f551104e446-clip1",
-        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {}}]}' | wc
+  -d '{"guid": "cpb-aacip-f551104e446-clip1",
+       "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {}}]}' | wc
 
 read
 echo '\n\n>>> DOWNLOAD FILE - USING WORKFLOW_ID\n'
@@ -57,20 +56,19 @@ echo '\n\n>>> DOWNLOAD FILE - USING MORE COMPLICATED WORKFLOW\n'
 curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{ "guid": "cpb-aacip-f551104e446-clip1",
-        "workflow": [
-          {"app": "swt-detection", "version": "v8.6", "properties": {}},
-          {"app": "smolvlm2-captioner", "version": "v1.0", "properties": {}},
-          {"app": "spacy-wrapper", "version": "v2.3", "properties": {"pretty": "True"}} ]
-      }' | wc
+  -d '{"guid": "cpb-aacip-f551104e446-clip1",
+       "workflow": [
+         {"app": "swt-detection", "version": "v8.6", "properties": {}},
+         {"app": "smolvlm2-captioner", "version": "v1.0", "properties": {}},
+         {"app": "spacy-wrapper", "version": "v2.3", "properties": {"pretty": "True"}} ]}' | wc
 
 read
 echo '\n\n>>> DOWNLOAD FILE - FAILURE\n'
 curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{ "guid": "cpb-aacip-f551104e446-clip1",
-        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {"Pretty": "True"}}]}' | jq
+  -d '{"guid": "cpb-aacip-f551104e446-clip1",
+       "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {"Pretty": "True"}}]}' | jq
 
 read
 echo '\n\n>>> DOWNLOAD FILES\n'
@@ -78,9 +76,8 @@ curl --silent -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   --output storage-response.zip \
- -d '{ "guid": ["cpb-aacip-f551104e446-clip1"],
-        "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {}}]}' | jq
+ -d '{"guid": ["cpb-aacip-f551104e446-clip1"],
+      "workflow": [{"app": "swt-detection", "version": "v8.6", "properties": {}}]}' | jq
 ls -al *zip
 
 echo '\n'
-

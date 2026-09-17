@@ -130,6 +130,14 @@ def get_mmif_file(workflow_id: str, identifier: str, num_views: int) -> str:
             raise DownloadWarning(f'Did not find: {fname.split(".")[0]}')
 
 
+def get_mmif_files(workflow_id: str, guids: list) -> BytesIO:
+    """
+    Return the MMIF files for a workflow and a list of identifiers. The results are
+    returned as a zip file.
+    """
+    return create_zipfile(workflow_id, guids)
+
+
 def rewind_time(workflow_id, guid, num_views) -> str:
     """
     This method takes in a workflow (path), a guid, and a number of views, and uses
@@ -156,6 +164,7 @@ def create_zipfile(workflow_id: str, guids: list) -> BytesIO:
     When retrieving multiple MMIFs for a workflow, we construct a zip file that
     contains a file for each guid.
     """
+    # TODO: the workflow id is actually an absolute path
     # TODO: this now creates the entire zipfile in memory, should instead use some
     # kind of streaming, and then probably update the way the caling code deals with
     # the reponse
