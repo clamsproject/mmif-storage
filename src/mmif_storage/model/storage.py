@@ -10,14 +10,14 @@ from flask import jsonify
 
 from clams_utils.aapb import guidhandler
 from mmif import Mmif, utils
-from mmif.utils.workflow_helper import generate_param_hash
+from mmif.utils.workflow_helper import describe_single_mmif, generate_param_hash
 from mmif.utils.workflow_helper import generate_workflow_identifier
 from mmif.utils.summarizer import Summary
 
 import mmif_storage
 from mmif_storage.errors import DownloadWarning, EmptyMmifWarning
 from mmif_storage.errors import UploadWarning, FileExistsWarning
-from mmif_storage.utils import path_as_string, strip_prefix, describe_single_mmif
+from mmif_storage.utils import path_as_string, strip_prefix
 
 
 def peek(workflow_data: list) -> dict:
@@ -248,7 +248,6 @@ class StoragePath():
         self.rel_path = rel_path
         self._name = self.rel_path.name
         self.parameter_file = None
-        self.pp()
         if not self.full_path.suffix:
             parameter_file = self.full_path.with_suffix('.json')
             if parameter_file.exists():
