@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import zipfile
 from io import BytesIO
@@ -11,10 +12,12 @@ from clams_utils.aapb import guidhandler
 from mmif import Mmif, utils
 from mmif.utils.workflow_helper import generate_param_hash
 from mmif.utils.workflow_helper import generate_workflow_identifier
+from mmif.utils.summarizer import Summary
 
 import mmif_storage
 from mmif_storage.errors import DownloadWarning, EmptyMmifWarning
 from mmif_storage.errors import UploadWarning, FileExistsWarning
+from mmif_storage.utils import path_as_string, strip_prefix, describe_single_mmif
 
 
 def peek(workflow_data: list) -> dict:
@@ -222,3 +225,236 @@ def generate_identifier_from_workflow(data: list) -> str:
         wfid_segments.extend([clams_app, param_hash])
     wfid = '/'.join(wfid_segments)
     return wfid
+
+
+class StoragePath():
+
+    """Implements a path in the MMIF storage directory. Embeds a regular Path and
+    provides some extra data and functionality relevant to the MMIF storage that
+    the path is in."""
+
+    def __init__(self, path: str = ''):
+        """Embed Path instances for the relative path inside the storage and the
+        full path. The path parameter contains the relative path from the mmif
+        storage directory or the full path."""
+        self.base_path = Path(mmif_storage.config.STORAGE_DIR)
+        if str(path).startswith(str(self.base_path)):
+            full_path = Path(path)
+            rel_path = Path(*full_path.parts[len(self.base_path.parts):])
+        else:
+            full_path = Path(self.base_path) / path
+            rel_path = Path(path)
+        self.full_path = full_path
+        self.rel_path = rel_path
+        self._name = self.rel_path.name
+        self.parameter_file = None
+        self.pp()
+        if not self.full_path.suffix:
+            parameter_file = self.full_path.with_suffix('.json')
+            if parameter_file.exists():
+                pfile = ParameterFile(self.rel_path.with_suffix('.json'))
+                self.parameter_file = pfile
+
+
+    def __str__(self):
+        """String representation using the relative path."""
+        return f'<StoragePath "{self.shortpathname}">'
+
+    def __len__(self):
+        """Length of the full path."""
+        return len(self.full_path.parts)
+
+    @property
+    def name(self):
+        """The final component of the relative path, if any."""
+        return self._name
+
+    @property
+    def stem(self):
+        """The stem of the relative path, if any."""
+        return self.rel_path.stem
+
+    @property
+    def shortpathname(self):
+        """Shortened name of the relative path."""
+        return path_as_string(self.rel_path)
+
+    @property
+    def parts(self):
+        return self.full_path.parts
+
+    def is_dir(self):
+        return self.full_path.is_dir()
+
+    def is_file(self):
+        return self.full_path.is_file()
+
+    def iterdir(self):
+        return self.full_path.iterdir()
+
+    def path_for_display(self) -> str:
+        # for display in the browser
+        return ' > '.join(self.rel_path.parts)
+
+    def pp(self):
+        print(f'\n{self}')
+        print(f'  base_path  = {self.base_path}')
+        print(f'  rel_path  = {self.rel_path}')
+        print(f'  full_path = {self.full_path}\n')
+
+    def directories(self) -> list:
+        """Return a list of Paths, one for each subdirectory."""
+        dirs = [sub for sub in self.full_path.iterdir() if sub.is_dir()]
+        return list(sorted([self.strip_prefix(d) for d in dirs]))
+
+    def files(self, include_derived=False):
+        """Return a list of Paths, one for each file in the directory."""
+        # NOTE. Now property files and MMIF files are distinguished simply by using
+        # the extension. Maybe use somehwhat more sophisticated code to get the file
+        # with parameters, like re.match("[0-9a-z]{32}\.json", path.name")
+        def is_derived(path: Path):
+            return path.name.endswith('.summ.json') or path.name.endswith('.desc.json')
+        files = [sub for sub in self.full_path.iterdir() if sub.is_file()]
+        if not include_derived:
+            files = [f for f in files if not is_derived(f)]
+        # Another filter to exclude parameter files.
+        files = [f for f in files if not f.suffix == '.json']
+        return list(sorted([self.strip_prefix(f) for f in files]))
+
+    def ddir(self) -> list:
+        """Return the directories at depth 3. For each directory we get a pair with
+        the full path and the relative path."""
+        # TODO: maybe this should return a list of StoragePaths
+        paths = []
+        depth = len(self) + 3
+        prefix_length = len(self.base_path.parts)
+        for root, _, _ in self.full_path.walk():
+            if len(root.parts) == depth:
+                paths.append(
+                    (Path(*root.parts[prefix_length:]), Path(*root.parts[-3:]) ))
+        return paths
+
+    def strip_prefix(self, path: Path) -> Path:
+        return Path(*path.parts[len(self.base_path.parts):])
+
+    def rmtree(self, indent=''):
+        """Delete the path from the storage, if there is a sister path with the
+        same name with a .json suffix, then delete that file as well."""
+        shutil.rmtree(str(self.full_path))
+        properties_file = StoragePath(
+            f'{str(self.full_path.parent)}/{self.name}.json')
+        if properties_file.is_file():
+            properties_file.unlink()
+
+    def unlink(self):
+        """Remove the file from the storage and from the index."""
+        # TODO: this does NOT remove the path from the index
+        self.full_path.unlink()
+
+
+class ParameterFile:
+
+    def __init__(self, path: str):
+        self.base_path = Path(mmif_storage.config.STORAGE_DIR)
+        # rel_path is the relative path from the storage directory
+        # full_path is the absolute path on the storage server
+        self.rel_path = Path(path)
+        self.full_path = self.base_path / path
+        self.parameters = json.dumps(json.loads(self.full_path.read_text()), indent=2)
+        self.size = self.full_path.stat().st_size
+
+    def __str__(self):
+        return f'<ParameterFile size={self.size} "{self.rel_path}">'
+
+
+class MmifFile:
+
+    """Keeps track of all information for a MMIF file on the storage server. This
+    includes summary and description files, as well as various information from
+    higher up the path including app parameter files."""
+
+    # TODO: rename paths to be the same as for StorageDir and ParameterFile
+
+    def __init__(self, path: Path):
+        self.storage = Path(mmif_storage.config.STORAGE_DIR)
+        self.path = path
+        self.fullpath = self.storage / path
+        self.summary = self.fullpath.parent / f'{self.fullpath.stem}.summ.json'
+        self.summary_error = False
+        self.description = self.fullpath.parent / f'{self.fullpath.stem}.desc.json'
+
+    def summary_exists(self):
+        return self.summary.exists()
+
+    def description_exists(self):
+        return self.description.exists()
+
+    def relative_path(self) -> Path:
+        """The relative path to the parent of the MMIF file."""
+        return strip_prefix(self.storage, self.path.parent)
+
+    def parameters(self) -> list:
+        """A list of app-parameter pairs taken from all the apps involved in
+        creating the MMIF file."""
+        parameters = []
+        for p in reversed(self.path.parents):
+            if re.match("[0-9a-z]{32}", p.stem):
+                param_file = self.storage / p.parent / f'{p.stem}.json'
+                app_path = Path(*p.parts[-3:-1])
+                param_content = param_file.read_text()
+                parameters.append((app_path, param_content))
+        return parameters
+
+    def mmif_content(self) -> str:
+        """The content of the MMIF file as a prettified string."""
+        with open(self.fullpath, 'r') as fh:
+            mmif_content = json.dumps(json.loads(fh.read()), indent=2)
+            return mmif_content
+
+    def mmif_size(self):
+        return self.fullpath.stat().st_size
+
+    def summary_size(self):
+        return self.summary.stat().st_size
+
+    def summary_size_as_string(self):
+        return f'{self.summary.stat().st_size:,d}'
+        # The weird thing is that using the following instead gives errors
+        #    size = self.summary_size()
+        #    return f'{size:,d}'
+        # It looks like self is not an instance of MmifFile but None. I am
+        # totally at a loss to why that would be, but this may not be the case
+        # anymore now that summaries are generated earlier.
+
+    def summary_content(self) -> str:
+        """Get the summary of the MMIF file."""
+        if self.summary_error:
+            return '{ "message": "error when creating summary"}'
+        else:
+            return self.summary.read_text()
+
+    def create_summary(self):
+        if self.summary.exists():
+            # TODO: maybe add functionality somewhere to recreate a summary
+            return
+        try:
+            summary_obj = Summary(self.fullpath)
+            summary_obj.report(outfile=self.summary)
+        except Exception as e:
+            self.summary_error = True
+
+    def description_content(self) -> str:
+        """Get the description of the MMIF file. In case there is no description,
+        create it first."""
+        if not self.description_exists():
+            desc = describe_single_mmif(self.fullpath)
+            with open(str(self.description), 'w') as fh:
+                fh.write(json.dumps(desc, indent=2))
+        return self.description.read_text()
+
+    def pp(self):
+        print(f'\n<{self.path.name}>')
+        print(f'    base = {self.storage}')
+        print(f'    mmif = {strip_prefix(self.storage, self.fullpath)}')
+        print(f'    summ = {strip_prefix(self.storage, self.summary)}')
+        print(f'    desc = {strip_prefix(self.storage, self.description)}\n')

@@ -12,14 +12,14 @@ from jinja2 import Template
 
 import mmif_storage
 from mmif_storage.model.analytics import storage_analytics
-from mmif_storage.utils import ServerDirectory, MmifFile, ParameterFile
+from mmif_storage.model.storage import StoragePath, MmifFile
 from mmif_storage.utils import path_from_workflow_specs, strip_prefix
 
 
 bp = Blueprint('www', __name__, template_folder='templates')
 
 
-DEBUG = True
+DEBUG = False
 
 
 @bp.get('/www/')
@@ -85,14 +85,14 @@ def search_mmif_post():
 
 @bp.get('/www/browse_paths.html')
 def browse_paths():
-    sdir = ServerDirectory(mmif_storage.config.STORAGE_DIR, request.args.get("path"))
+    sdir = StoragePath(request.args.get("path", ''))
     return render_template('browse_paths.html', sdir=sdir)
 
 
 @bp.get('/www/view_mmif.html')
 def view_file():
     mode = request.args.get("mode")
-    mfile = MmifFile(mmif_storage.config.STORAGE_DIR, Path(request.args.get("path")))
+    mfile = MmifFile(Path(request.args.get("path")))
     debug(f'mode = {mode}')
     if mode in ('summary', 'collapsible'):
         # Doing this upfront (unlike with the description) to avoid issues with

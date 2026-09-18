@@ -2,14 +2,15 @@
 
 Code to interact with a set of MMIF files. It contains a Python interface, a web server API and a browser.
 
-The recommended Python version is 3.11 or higher, but older version may just work fine. 
+The required Python version is 3.12 or higher.
+
 
 ### Setting up
 
 - Install dependencies from `requirements.txt`.
 - Move to the `src` directory.
 - Copy `.env.sample` into `.env`.
-- Edit settings in `.env` if needed. The most like change is to `STORAGE_DIR`, which now points to the small toy storage directory that is included in this repository.
+- Edit settings in `.env` if needed. The most likely change is to `STORAGE_DIR`, which now points to the small toy storage directory that is included in this repository.
 
 To check whether you can run the main module and see the storage:
 
@@ -19,8 +20,8 @@ python -m mmif_storage paths
 ```json
 [
   "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
-  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e"
-]
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e",
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e/spacy-wrapper/v2.3/5fe49d06725497b274b6eaaf0fe0c5d2"]
 ```
 
 
