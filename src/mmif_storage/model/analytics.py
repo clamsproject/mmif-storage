@@ -20,6 +20,9 @@ def storage_analytics() -> dict:
 
     # TODO (ledibr @ 10/12/25): consider adding params to show/hide certain parts
     # e.g. full workflow specs?
+    # TODO (ledibr @ 10/27/25): the analytics seem to be in alphabetical key order,
+    # not chronological. given how long these might get, do we want to potentially
+    # return this differently?
 
     storage_dir = mmif_storage.config.STORAGE_DIR
     analytics = {"total_mmif_files": 0, "total_workflows": 0, "workflows": [],
@@ -63,8 +66,13 @@ def storage_analytics() -> dict:
             if dirs:
                 analytics["non_terminal_mmif_count"] += len(mmif_list)
 
-    # TODO (ledibr @ 10/27/25): the analytics seem to be in alphabetical key order,
-    # not chronological. given how long these might get, do we want to potentially
-    # return this differently?
-
     return analytics
+
+
+def storage_paths() -> list:
+    """
+    Return the list of paths in the storage.
+    """
+    stats = storage_analytics()
+    return [wf["path"] for wf in stats["workflows"]]
+

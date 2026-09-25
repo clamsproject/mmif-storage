@@ -22,27 +22,26 @@ bp = Blueprint('www', __name__, template_folder='templates')
 DEBUG = False
 
 
-@bp.get('/www/')
-@bp.get('/www/index.html')
+@bp.get('/')
 def index():
     return render_template('index.html')
 
 
-@bp.get('/www/search_mmif.html')
+@bp.get('/search_mmif.html')
 def search_mmif_get():
     return render_template('search_mmif.html', status=None)
 
 
-@bp.post('/www/search_mmif.html')
+@bp.post('/search_mmif.html')
 def search_mmif_post():
-    # TODO: this is a tad messy, and there is some overlap here with 
-    # mmif_storage.mmif_storage.download_mmif(), may need some refactoring
-    
+    # TODO: this is a tad messy and it may need some refactoring, including pushing
+    # down some code to the storage module.
+
     guid = request.form.get('guid', '')
     workflow = request.form.get('workflow', '')
     debug(f'guid = {guid}')
     debug(f'workflow = {" ".join(str(workflow).split())}')
-    
+
     status = None
     message = None
     mmif_file = None
@@ -61,7 +60,9 @@ def search_mmif_post():
         if not guid:
             # get the files at the workflow path
             status = 'workflow'
-            mmif_files = sorted([p.stem for p in Path(full_workflow_path).glob('*')])
+            mmif_files = sorted(
+                [p.stem for p in Path(full_workflow_path).glob('*')
+                 if p.suffix == '.mmif'])
         elif isinstance(guid, str):
             # get the one MMIF file, but check for its existence
             status = 'workflow-guid'
@@ -72,9 +73,10 @@ def search_mmif_post():
                     {"message" : f"File does not exist at that path",
                      "filename": mmif_file.name,
                      "pathname": workflow_path}, indent=2)
+            else:
+                mmif_file = Path(workflow_path) / mmif_file.stem
     
     debug(f'status = {status}')
-    mmif_files = [mf for mf in mmif_files if not (mf[-5:] in ('.desc', '.summ'))]
     debug(f'Found {len(mmif_files)} MMIF files for workflow')
 
     return render_template(
@@ -83,13 +85,13 @@ def search_mmif_post():
         path=workflow_path, mmif_file=mmif_file, mmif_files=mmif_files)
 
 
-@bp.get('/www/browse_paths.html')
+@bp.get('/browse_paths.html')
 def browse_paths():
     sdir = StoragePath(request.args.get("path", ''))
     return render_template('browse_paths.html', sdir=sdir)
 
 
-@bp.get('/www/view_mmif.html')
+@bp.get('/view_mmif.html')
 def view_file():
     mode = request.args.get("mode")
     mfile = MmifFile(Path(request.args.get("path")))
@@ -103,7 +105,7 @@ def view_file():
 
 
 '''
-@bp.get(f'/www/inspector/{INDEX_PAGE}')
+@bp.get(f'/inspector/{INDEX_PAGE}')
 def inspector_index():
     data = InspectorData(INDEX_PAGE)
     rendered_template = data.template.render(
@@ -111,12 +113,12 @@ def inspector_index():
     return update_rendered(rendered_template, data.css_file)
 
 
-@bp.get(f'/www/inspector/{VIEWS_PAGE}')
+@bp.get(f'/inspector/{VIEWS_PAGE}')
 def inspector_views():
     return display_inspector_page(VIEWS_PAGE)
 
 
-@bp.get(f'/www/inspector/{TIMEFRAMES_PAGE}')
+@bp.get(f'/inspector/{TIMEFRAMES_PAGE}')
 def inspector_timeframes():
     data = InspectorData(TIMEFRAMES_PAGE)
     rendered_template = data.template.render(
@@ -124,7 +126,7 @@ def inspector_timeframes():
     return update_rendered(rendered_template, data.css_file, data.js_file)
 
 
-@bp.get(f'/www/inspector/{TRANSCRIPT_PAGE}')
+@bp.get(f'/inspector/{TRANSCRIPT_PAGE}')
 def inspector_transcript():
     data = InspectorData(TRANSCRIPT_PAGE)
     rendered_template = data.template.render(
@@ -132,7 +134,7 @@ def inspector_transcript():
     return update_rendered(rendered_template, data.css_file, data.js_file)
 
 
-@bp.get(f'/www/inspector/{CAPTIONS_PAGE}')
+@bp.get(f'/inspector/{CAPTIONS_PAGE}')
 def inspector_captions():
     data = InspectorData(CAPTIONS_PAGE)
     rendered_template = data.template.render(
@@ -148,7 +150,7 @@ def display_inspector_page(page_name: str) -> str:
 '''
 
 
-@bp.get('/www/analytics.html')
+@bp.get('/analytics.html')
 def analytics():
     analytics = storage_analytics()
     properties = {p: analytics[p] for p in analytics.keys() if p != 'workflows'}

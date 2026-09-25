@@ -116,6 +116,8 @@ def get_mmif_file(workflow_id: str, identifier: str, num_views: int) -> str:
     Retrieve the MMIF file for a workflow and an identifier. If none was found
     raise a DownloadWarning.
     """
+    # TODO. When getting a MMIF file you should NOT have to know in advance
+    # how many views it has.
     fname = identifier + ".mmif"
     path = os.path.join(mmif_storage.config.STORAGE_DIR, workflow_id, fname)
     # If the filepath exists, we return the content

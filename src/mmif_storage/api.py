@@ -15,6 +15,7 @@ some code from the clamshack to this repository in mmif_storage.model.
 
 import os
 import io
+import textwrap
 from typing import Dict, List, Any
 
 from pydantic import BaseModel, ConfigDict
@@ -77,14 +78,19 @@ def index():
     return PlainTextResponse(text)
 
 
-@app.get('/help', tags=["Intro"])
+@app.get('/routes', tags=["Intro"])
 def help():
     """Documentation for all routes"""
     help_string = io.StringIO("")
     for path_url, path_data in app.openapi()["paths"].items():
         for key in path_data.keys():
             help_string.write(f'\n{key.upper()} {path_url}\n')
-            help_string.write(f"\n    {path_data[key].get('description')}\n")
+            description = path_data[key].get('description')
+            lines = textwrap.wrap(
+                description, initial_indent='    ', subsequent_indent='    ')
+            for line in lines:
+                help_string.write('\n' + line)
+            help_string.write('\n')
     help_string.write('\n')
     return (PlainTextResponse(help_string.getvalue()))
 
@@ -98,8 +104,7 @@ def get_analytics():
 @app.get('/paths', tags=['Analytics'])
 def get_paths():
     """Return all workflow paths in the MMIF storage."""
-    stats = analytics.storage_analytics()
-    return [wf["path"] for wf in stats["workflows"]]
+    return analytics.storage_paths()
 
 
 @app.post('/peek', tags=['Peek and Search'])
@@ -165,13 +170,15 @@ def download_file(request: DownloadFileRequest):
 @app.post('/download_files', tags=['Upload and Download'])
 def download_files(request: DownloadFilesRequest):
     """Download a zip file with MMIF files and some housekeeping data."""
+    # NOTE: the user will need to add '--output <FILE>' arg to the curl request.
     wfid = _get_workflow_id(request)
     num_views = len(request.workflow)
     guid = request.guid
     workflow_dir = os.path.join(mmif_storage.config.STORAGE_DIR, wfid)
     if not wfid:
         return jsonify({'error': 'Missing required parameters: need at least a workflow'})
-    return get_mmif_files(workflow_dir, guid, num_views)
+    mem_file = storage.create_zipfile(workflow_dir, guid)
+    return StreamingResponse(mem_file, media_type="application/octet-stream")
 
 
 def _get_workflow_id(request: DownloadRequest) -> str:
@@ -183,21 +190,14 @@ def _get_workflow_id(request: DownloadRequest) -> str:
 
 @app.delete('/delete_path', tags=["Destructive Behavior"])
 def delete():
-    """Delete all data at a workflow path. This also deletes all downstream data."""
+    """Delete all data at a workflow path. This also deletes all downstream data.
+    This is not implemented yet."""
     return PlainTextResponse("Not yet implemented")
 
 
 @app.delete('/empty_storage', tags=["Destructive Behavior"])
 def empty():
-    """Delete all data from the storage."""
+    """Delete all data from the storage. Not yet implemented."""
     return PlainTextResponse("Not yet implemented")
 
 
-def get_mmif_files(workflow_id: str, guids: list, num_views: int):
-    """
-    When retrieving multiple MMIFs for a workflow, we return a zip file.
-
-    The user will need to add '--output <FILE>' arg to the curl request.
-    """
-    mem_file = storage.get_mmif_files(workflow_id, guids)
-    return StreamingResponse(mem_file, media_type="application/octet-stream")

@@ -1,29 +1,54 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mmif-storage"
-version = "0.2.0"
+name = "mmif-storage-mv"
+version = "0.2.0.rc1"
 description = "Tool to manage MMIF files."
+readme = "README.md"
+license = "Apache-2.0"
 requires-python = ">=3.12"
-dynamic = ["dependencies"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Flask",
+    "Framework :: Pytest",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    # TODO: move some of these dependencies to an optional web package so that
+    # consumers like the clamshack do not need to install fastapi and flask
+	"python-dotenv==1.*",
+	"fastapi[standard]",
+	"flask==3.1.*",
+	"gunicorn==26.*",
+	"mmif-python==1.4.*",
+	"clams_utils"
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
 
 [project.scripts]
 start_api = "mmif_storage:start_api"
 start_www = "mmif_storage:start_www"
 
+[project.urls]
+homepage = "https://clams.ai"
+source = "https://github.com/clamsproject/mmif-storage"
+
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
 
 [tool.setuptools.packages.find]
 where = ["./src"]
 
 [tool.setuptools.package-data]
 mmif_storage = ["templates/*", "static/*", "static/**/*"]
-
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
 
 [tool.pytest]
 testpaths = ["tests"]

@@ -19,7 +19,7 @@ All examples are using curl invocation. If an output is given then it is pretty 
 
 To get all analytics:
 
-```json
+```bash
 curl -X GET 'http://127.0.0.1:8000/analytics' -H 'accept: application/json'
 ```
 ```json
@@ -61,7 +61,7 @@ curl -X GET 'http://127.0.0.1:8000/analytics' -H 'accept: application/json'
 
 To get all paths in the MMIF Storage::
 
-```json
+```bash
 curl -X GET 'http://127.0.0.1:8000/paths' -H 'accept: application/json'
 ```
 
@@ -80,7 +80,7 @@ curl -X GET 'http://127.0.0.1:8000/paths' -H 'accept: application/json'
 
 The input is a workflow description. The output is the workflow identifier for the workflow, plus any files at that workflow.
 
-```json
+```bash
 curl -X POST 'http://127.0.0.1:8000/peek' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -117,7 +117,7 @@ If you use SwaggerUI you can also simply enter the following:
 
 In this case (unlike with the other examples) you need to be in the root directory of the repository for it to work since there is a file path in the curl command.
 
-```json
+```bash
 curl -X POST 'http://127.0.0.1:8000/upload' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
@@ -141,7 +141,7 @@ curl -X POST 'http://127.0.0.1:8000/upload' \
 
 The default is to not overwrite an older file if there was one, use the overwrite option to overrule that:
 
-```json
+```bash
 curl -X POST 'http://127.0.0.1:8000/upload?overwrite=true' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
@@ -156,7 +156,7 @@ curl -X POST 'http://127.0.0.1:8000/upload?overwrite=true' \
 Downloading a single MMIF file. In addition to a workflow this also requires
 an identifier (a GUID in the aapb case). The return value is a MMIF file.
 
-```json
+```bash
 curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -166,7 +166,7 @@ curl -X POST 'http://127.0.0.1:8000/download' \
 
 Workflows can be more complicated:
 
-```json
+```bash
 curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -179,7 +179,7 @@ curl -X POST 'http://127.0.0.1:8000/download' \
 
 Here is one that should not return a MMIF file because the workflow is not in the storage.
 
-```json
+```bash
 curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -196,7 +196,7 @@ Same as above, but now with a list of identifiers, which returns a zip file.
 The list can be of length one in which case you still get a zip file and not
 a JSON/MMIF file as above. Note the addition of the --output argument, without it you may get a warning that the output can mess up the terminal.
 
-```json
+```bash
 curl \
   -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
@@ -209,7 +209,7 @@ curl \
 Using workflow identifiers. As an alternative we can use the workflow identifier,
 this works whether the guid value is a string or a list.
 
-```json
+```bash
 curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -217,7 +217,7 @@ curl -X POST 'http://127.0.0.1:8000/download' \
        "workflow_id": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e"}'
 ```
 
-```json     
+```bash
 curl -X POST 'http://127.0.0.1:8000/download' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \

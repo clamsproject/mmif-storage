@@ -1,6 +1,0 @@
-python-dotenv==1.*
-fastapi[standard]
-flask==2.*
-gunicorn
-mmif-python==1.4.*
-clams_utils
