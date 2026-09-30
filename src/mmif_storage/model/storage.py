@@ -111,7 +111,7 @@ def write_parameters(root: str, wfid: str, param_dicts: list):
             json.dump(param_dicts[i // 3], f, indent=2)
 
 
-def get_mmif_file(workflow_id: str, identifier: str, num_views: int) -> str:
+def get_mmif_file(workflow_id: str, identifier: str, num_views: int = 1) -> str:
     """
     Retrieve the MMIF file for a workflow and an identifier. If none was found
     raise a DownloadWarning.

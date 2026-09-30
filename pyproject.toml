@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmif-storage-mv"
-version = "0.2.0.rc1"
+version = "0.2.0.rc3"
 description = "Tool to manage MMIF files."
 readme = "README.md"
 license = "Apache-2.0"
@@ -17,21 +17,17 @@ classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-]
+    "Programming Language :: Python :: 3.14"]
 dependencies = [
-    # TODO: move some of these dependencies to an optional web package so that
-    # consumers like the clamshack do not need to install fastapi and flask
 	"python-dotenv==1.*",
-	"fastapi[standard]",
+	"fastapi[standard]==0.141.*",
 	"flask==3.1.*",
 	"gunicorn==26.*",
 	"mmif-python==1.4.*",
-	"clams_utils"
-]
+	"clams_utils"]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest==9.*"]
 
 [project.scripts]
 start_api = "mmif_storage:start_api"
