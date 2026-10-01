@@ -154,16 +154,20 @@ Then install anywhere by using the created archive:
 pip install -r PATH_TO_ARCHIVE
 ```
 
-<!--
+### Containerization
 
-TODO: the follopwing does not work anymore.
+Here we also assume that we have access to the source code.
 
-To run the MMIF browser in production:
+Use Docker or Podman to build the image:
 
 ```bash
-gunicorn "mmif_storage:create_app()" -b 0.0.0.0:8001
+docker build -f Containerfile -t mmif-storage:0.2.0.rc3 .
 ```
 
-The port number is used here because by default gunicorn runs on 8000, which may already be taken by the API. The browser then runs at [http://127.0.0.1:8001/www/](http://127.0.0.1:8001/www/).
+Starting the container:
 
--->
+```bash
+docker run --rm -it -d -v $PWD/data/storage-example:/data -p 8000:8000 mmif-storage:0.2.0.rc3
+```
+
+This assumes that we run this command from the top-level of the `mmif-storage` directory and therefore the container will use the mini example storage. It is the responsibilty of the developer to replace `$PWD/data/storage-example` with the path to the needed MMIF Storage directory. Also, the developer may have to replace the first port in the port mapping depending on local circumstances.
