@@ -6,8 +6,6 @@ from io import BytesIO
 from pathlib import Path
 from typing import Union
 
-from flask import jsonify
-
 from clams_utils.aapb import guidhandler
 from mmif import Mmif, utils
 from mmif.utils.workflow_helper import describe_single_mmif, generate_param_hash

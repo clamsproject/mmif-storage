@@ -17,10 +17,10 @@ from collections import namedtuple
 Location = namedtuple(
     'Location', ['storage_source', 'storage_test', 'file_list', 'upload_file'])
 
-STORAGE_SOURCE = 'data/storage-example'
+STORAGE_SOURCE = 'src/mmif_storage/data/storage-example'
 STORAGE_TEST = 'tests/tmp-storage'
 FILE_LIST = 'tests/storage-files.txt'
-UPLOAD_FILE = 'data/cpb-aacip-f551104e446-clip1.mmif'
+UPLOAD_FILE = 'src/mmif_storage/data/cpb-aacip-f551104e446-clip1.mmif'
 
 
 locations = Location(
