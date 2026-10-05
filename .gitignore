@@ -9,6 +9,7 @@ build
 dist
 src/mmif_storage*.egg-info
 storage-response*
+output.zip
 tmp*
 *desc.json
 *summ.json

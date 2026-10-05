@@ -1,13 +1,13 @@
 """
 
-This init file imports some names to the package toplevel and sets up the
-configuration.
+Import some names to the package toplevel, set up the configuration and
+define the project scripts.
 
 """
 
-
 import os
 import sys
+import argparse
 from pathlib import Path
 from importlib.resources import files
 
@@ -34,12 +34,23 @@ class Config(BaseModel):
 config = Config()
 
 
+def parse_arguments() -> argparse.Namespace:
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument(
+        '-d', type=str, required=True,
+        metavar='DIRECTORY', help="output directory")
+    return argparser.parse_args(sys.argv[1:])
+
+
 def create_storage_example():
     """Create a directory with the storage example in src/mmif_storage/data. This
     is intended for other tools like those in mmif-storage-api and clamshack so
     they can quickly build an example for experimenting or testing, without having
     to maintain the MMIF data."""
-    target_dir = Path(sys.argv[1])
+    args = parse_arguments()
+    target_dir = Path(args.d)
+    if target_dir.exists():
+        exit(f"Directory '{args.d}' already exists, exiting...")
     storage_example = files(PACKAGE_NAME).joinpath(EXAMPLE_STORAGE_DIR)
     for root, _dirs, fnames in storage_example.walk(on_error=print):
         for fname in fnames:

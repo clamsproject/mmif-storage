@@ -60,16 +60,15 @@ class TestStorage():
     def test_download_zip(self, environment):
         wfid = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         identifiers = ['cpb-aacip-f551104e446-clip1']
-        full_path = pathlib.Path(mmif_storage.config.MMIF_STORAGE_DIR) / wfid
-        zip_file = storage.get_mmif_files(str(full_path), identifiers)
+        zip_file = storage.get_mmif_files(wfid, identifiers)
         # Using __sizeof__() instead of sys.getsizeof() to get the core size without
         # any additional garbage collector overhead. 
         zip_file_size = zip_file.__sizeof__()
         assert zip_file_size == 8626
 
     def test_upload(self, environment):
-        """Upload a file and check it is put in the correct spot and also check
-        whether peeking for its workflow identifier gets the correct result."""
+        """Upload a file and check wether it is put in the correct spot and whether
+        peeking for its workflow identifier gets the correct result."""
         wfid = 'dummy-app/v0.1/d41d8cd98f00b204e9800998ecf8427e'
         fname = 'cpb-aacip-f551104e446-clip1.mmif'
         with open(environment.upload_file) as fh:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmif-storage-mv"
-version = "0.2.0.rc5"
+version = "0.2.0.rc6"
 description = "Python interface to manage MMIF files."
 readme = "README.md"
 license = "Apache-2.0"
