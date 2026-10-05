@@ -24,7 +24,7 @@ def storage_analytics() -> dict:
     # not chronological. given how long these might get, do we want to potentially
     # return this differently?
 
-    storage_dir = mmif_storage.config.STORAGE_DIR
+    storage_dir = mmif_storage.config.MMIF_STORAGE_DIR
     analytics = {"total_mmif_files": 0, "total_workflows": 0, "workflows": [],
                 "non_terminal_mmif_count": 0, "dirty_workflow_mmif_count": 0}
     app_specs = {}

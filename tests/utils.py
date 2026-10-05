@@ -11,7 +11,7 @@ def environment(request):
     """Create the test storage directory and set the storage directory in the 
     storage configuration."""
     shutil.rmtree(locations.storage_test, ignore_errors=True)
-    mmif_storage.config.STORAGE_DIR = locations.storage_test
+    mmif_storage.config.MMIF_STORAGE_DIR = locations.storage_test
     copy_files(locations.file_list, locations.storage_source, locations.storage_test)
     yield locations
 

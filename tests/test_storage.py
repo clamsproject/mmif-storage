@@ -5,7 +5,7 @@ Testing the storage and its web API.
 An alternative for the fixture is to mock the storage location:
 
     from unittest.mock import patch
-    @patch('mmif_storage.config.STORAGE_DIR','data/storage-example')    
+    @patch('mmif_storage.config.MMIF_STORAGE_DIR','data/storage-example')    
 
 """
 
@@ -18,7 +18,7 @@ import shutil
 from collections import namedtuple
 
 import mmif_storage
-from mmif_storage.model import storage
+from mmif_storage import storage
 from mmif_storage.errors import DownloadWarning, FileExistsWarning
 from utils import environment
 
@@ -30,7 +30,7 @@ class TestStorage():
 
     def test_storage_dir(self, environment):
         """Check whether the storage directory exist."""
-        storage_directory = mmif_storage.config.STORAGE_DIR
+        storage_directory = mmif_storage.config.MMIF_STORAGE_DIR
         assert storage_directory == 'tests/tmp-storage'
         assert pathlib.Path(storage_directory).is_dir()
 
@@ -60,7 +60,7 @@ class TestStorage():
     def test_download_zip(self, environment):
         wfid = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         identifiers = ['cpb-aacip-f551104e446-clip1']
-        full_path = pathlib.Path(mmif_storage.config.STORAGE_DIR) / wfid
+        full_path = pathlib.Path(mmif_storage.config.MMIF_STORAGE_DIR) / wfid
         zip_file = storage.get_mmif_files(str(full_path), identifiers)
         # Using __sizeof__() instead of sys.getsizeof() to get the core size without
         # any additional garbage collector overhead. 

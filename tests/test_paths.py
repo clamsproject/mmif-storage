@@ -1,5 +1,5 @@
 import mmif_storage
-from mmif_storage.model import storage
+from mmif_storage import storage
 from utils import environment
 
 

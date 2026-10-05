@@ -17,7 +17,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14"]
 dependencies = [
-	"python-dotenv==1.*",
     "pydantic==2.*",
 	"mmif-python==1.4.*",
 	"clams_utils"]
@@ -26,7 +25,7 @@ dependencies = [
 dev = ["pytest==9.*"]
 
 [project.scripts]
-create-example = "mmif_storage:create"
+create-storage-example = "mmif_storage:create_storage_example"
 
 [project.urls]
 homepage = "https://clams.ai"

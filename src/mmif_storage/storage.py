@@ -6,6 +6,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import Union
 
+from pydantic import BaseModel
+
 from clams_utils.aapb import guidhandler
 from mmif import Mmif, utils
 from mmif.utils.workflow_helper import describe_single_mmif, generate_param_hash
@@ -18,7 +20,13 @@ from mmif_storage.errors import UploadWarning, FileExistsWarning
 from mmif_storage.utils import path_as_string, strip_prefix
 
 
-def peek(workflow_data: list) -> dict:
+class WorkflowItem(BaseModel):
+    app: str
+    version: str
+    properties: dict
+
+
+def peek(workflow_data: list[WorkflowItem]) -> dict:
     """Return a dictionary with a workflow identifier and a list of files at that
     workflow. Return a warning if no workflow identifier could be created. The
     input is a list of workflow items, either as defined in the mmif_storage.api
@@ -27,7 +35,7 @@ def peek(workflow_data: list) -> dict:
     if not wfid:
         return {
             'warning': 'Could not build a workflow identifier from the input given.'}
-    wfpath = os.path.join(mmif_storage.config.STORAGE_DIR, wfid)
+    wfpath = os.path.join(mmif_storage.config.MMIF_STORAGE_DIR, wfid)
     return {
         'workflow_id': wfid,
         'filenames': get_files_at_workflow(wfpath)}
@@ -44,7 +52,7 @@ def upload_mmif(body: str,
     for any of the boundary cases where an upload will not occur."""
 
     mmif = Mmif(body)
-    cur_root = mmif_storage.config.STORAGE_DIR if root is None else root
+    cur_root = mmif_storage.config.MMIF_STORAGE_DIR if root is None else root
     guid = get_guid(mmif)
 
     # Generate the workflow identifier from the MMIF views and retrieve the
@@ -117,7 +125,7 @@ def get_mmif_file(workflow_id: str, identifier: str, num_views: int = 1) -> str:
     # TODO. When getting a MMIF file you should NOT have to know in advance
     # how many views it has.
     fname = identifier + ".mmif"
-    path = os.path.join(mmif_storage.config.STORAGE_DIR, workflow_id, fname)
+    path = os.path.join(mmif_storage.config.MMIF_STORAGE_DIR, workflow_id, fname)
     # If the filepath exists, we return the content
     try:
         with open(path, 'r') as file:
@@ -237,7 +245,7 @@ class StoragePath():
         """Embed Path instances for the relative path inside the storage and the
         full path. The path parameter contains the relative path from the mmif
         storage directory or the full path."""
-        self.base_path = Path(mmif_storage.config.STORAGE_DIR)
+        self.base_path = Path(mmif_storage.config.MMIF_STORAGE_DIR)
         if str(path).startswith(str(self.base_path)):
             full_path = Path(path)
             rel_path = Path(*full_path.parts[len(self.base_path.parts):])
@@ -354,7 +362,7 @@ class StoragePath():
 class ParameterFile:
 
     def __init__(self, path: str):
-        self.base_path = Path(mmif_storage.config.STORAGE_DIR)
+        self.base_path = Path(mmif_storage.config.MMIF_STORAGE_DIR)
         # rel_path is the relative path from the storage directory
         # full_path is the absolute path on the storage server
         self.rel_path = Path(path)
@@ -375,7 +383,7 @@ class MmifFile:
     # TODO: rename paths to be the same as for StorageDir and ParameterFile
 
     def __init__(self, path: Path):
-        self.storage = Path(mmif_storage.config.STORAGE_DIR)
+        self.storage = Path(mmif_storage.config.MMIF_STORAGE_DIR)
         self.path = path
         self.fullpath = self.storage / path
         self.summary = self.fullpath.parent / f'{self.fullpath.stem}.summ.json'
