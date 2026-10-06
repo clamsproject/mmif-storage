@@ -1,6 +1,6 @@
 """
 
-Testing the storage and its web API.
+Testing the Python storage API, also includes tests for the analytics module.
 
 An alternative for the fixture is to mock the storage location:
 
@@ -17,8 +17,7 @@ import pytest
 import shutil
 from collections import namedtuple
 
-import mmif_storage
-from mmif_storage import storage
+from mmif_storage import config, analytics, storage
 from mmif_storage.errors import DownloadWarning, FileExistsWarning
 from utils import environment
 
@@ -30,11 +29,22 @@ class TestStorage():
 
     def test_storage_dir(self, environment):
         """Check whether the storage directory exist."""
-        storage_directory = mmif_storage.config.MMIF_STORAGE_DIR
+        storage_directory = config.MMIF_STORAGE_DIR
         assert storage_directory == 'tests/tmp-storage'
         assert pathlib.Path(storage_directory).is_dir()
 
+    def test_paths(self, environment):
+        """Check whether the number of paths is correct."""
+        storage_directory = config.MMIF_STORAGE_DIR
+        assert len(analytics.storage_paths()) == 3
+
+    def test_analytics(self, environment):
+        """Check whether the analytics seem right."""
+        storage_directory = config.MMIF_STORAGE_DIR
+        assert len(analytics.storage_analytics()) == 5
+
     def test_peek(self, environment):
+        """Peeking into a particular directory."""
         workflow = [WorkflowItem('swt-detection', 'v8.6', {})]
         result = storage.peek(workflow)
         expected_result = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'

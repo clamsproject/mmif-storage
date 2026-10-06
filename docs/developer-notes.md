@@ -8,14 +8,46 @@ cd mmif-storage
 pip install -e .
 ```
 
-To check whether you can run the main module and see the storage:
+To check whether you can run the main module and see the example storage:
 
 ```bash
-cd src
-python -m mmif_storage paths
+python -m mmif_storage test
 ```
 
-```json
+This runs a couple of test and shows something like the following:
+
+```
+>>> storage paths
+
+[
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e",
+  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e/spacy-wrapper/v2.3/5fe49d06725497b274b6eaaf0fe0c5d2"
+]
+
+>>> peek results
+
+{
+  "workflow_id": "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
+  "filenames": [
+    "cpb-aacip-f551104e446-clip2",
+    "cpb-aacip-f551104e446-clip1"
+  ]
+}
+
+>>> file retrieval (single MMIF file and a zip archive)
+
+file size =  35349
+zip size  =  8626
+]
+```
+
+You can also peek into other storage directories
+
+```bash
+python -m mmif_storage paths PATH_TO_STORAGE
+```
+```
 [
   "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
   "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e",

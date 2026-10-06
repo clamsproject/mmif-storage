@@ -25,7 +25,7 @@ def storage_analytics() -> dict:
 
     for root, dirs, files in os.walk(storage_dir):
 
-        curr_workflow = root[root.index(storage_dir) + len(storage_dir):]
+        curr_workflow = root[root.index(str(storage_dir)) + len(str(storage_dir)):]
         curr_workflow = curr_workflow.lstrip('/')
 
         json_list = [f for f in files if re.search(r'\.json$', f)]

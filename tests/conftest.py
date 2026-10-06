@@ -17,8 +17,7 @@ import os
 
 FILE_ORDER = [
     "test_paths.py",
-    "test_storage.py",
-    "test_api.py"
+    "test_storage.py"
 ]
 
 
