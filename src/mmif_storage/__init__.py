@@ -42,13 +42,18 @@ def parse_arguments() -> argparse.Namespace:
     return argparser.parse_args(sys.argv[1:])
 
 
-def create_storage_example():
+def create_storage_example(target_dir=None):
     """Create a directory with the storage example in src/mmif_storage/data. This
     is intended for other tools like those in mmif-storage-api and clamshack so
     they can quickly build an example for experimenting or testing, without having
-    to maintain the MMIF data."""
-    args = parse_arguments()
-    target_dir = Path(args.d)
+    to maintain the MMIF data. The target directory is either supplied via the
+    command line invocation of the create-storage-example project script or as a
+    parameter to this function."""
+    if target_dir is None:
+        args = parse_arguments()
+        target_dir = Path(args.d)
+    else:
+        target_dir = Path(target_dir)
     if target_dir.exists():
         exit(f"Directory '{args.d}' already exists, exiting...")
     storage_example = files(PACKAGE_NAME).joinpath(EXAMPLE_STORAGE_DIR)

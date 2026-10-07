@@ -7,3 +7,6 @@ clean:
 
 build:
 	python -m build
+
+test:
+	pytest --disable-warnings --tb=line
