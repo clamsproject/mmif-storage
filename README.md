@@ -1,88 +1,141 @@
-# mmif-storage
+# MMIF Storage
 
-Code to interact with a set of MMIF files. It contains a Python interface, a web server API and a browser.
+Python interface to interact with a set of MMIF files, for Python version 3.12 or higher.
 
-The recommended Python version is 3.11 or higher, but older version may just work fine. 
+MMIF files are stored by saving them in paths that reflect how the file was generated, that is, the path reflects the processing steps involved in creating the file. Each step in the file-creation workflow has three components:
 
-### Setting up
+1. The name of the CLAMS application.
+2. The version of the application.
+3. A hash value calculated from the parameter dictionary used when running the application.
 
-- Install dependencies from `requirements.txt`.
-- Move to the `src` directory.
-- Copy `.env.sample` into `.env`.
-- Edit settings in `.env` if needed. The most like change is to `STORAGE_DIR`, which now points to the small toy storage directory that is included in this repository.
+Each of these will be reflected in the path to the MMIF file created under those conditions. For example, running swt-detection version v8.6 with no parameters as a first processing step and adding the resulting file to the storage generates the following path (where the hash value is the one you always get when the parameter dictionary is empty):
 
-To check whether you can run the main module and see the storage:
+```
+swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e
+```
+
+See the [data/storage-example](https://github.com/clamsproject/mmif-storage/tree/v0.2.0.rc3/data/storage-example) directory for a small example storage directory which contains two files that were processed by two CLAMS apps.
+
+
+## Python API
+
+Before you start you may want to set an environment variable that points to the MMIF Storage directory that you want to use (this example is for a Bash shell, update if needed):
 
 ```bash
-python -m mmif_storage paths
-```
-```json
-[
-  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e",
-  "swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e"
-]
+export MMIF_STORAGE_DIR=/path/to/storage
 ```
 
+In Python, first import the configuration and the main modules:
 
-### Using the API and the browser
-
-To start the API do one of the following:
-
-```bash
-fastapi run mmif_storage/api.py
-uvicorn mmif_storage.api:app
+```python
+>>> from mmif_storage import config, storage, analytics
 ```
 
-See [docs/api-examples.md](docs/api-examples.md) for example API calls. The SwaggerUI page will be at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+After this we have access to all function in the analytics and storage modules. Unless you set an environment variable for the storage directory you will see the following when you check the configuration:
 
-To run the MMIF browser do:
-
-```bash
-gunicorn "mmif_storage:create_app()" -b 0.0.0.0:8001
+```python
+>>> config
+Config(MMIF_STORAGE_DIR=None)
 ```
 
-The port number is used here because by default gunicorn runs on 8000, which may already be taken by the API. The browser then runs at [http://127.0.0.1:8001/www/](http://127.0.0.1:8001/www/).
+You can change this with:
 
-For development use
-
-```bash
-flask run
+```python
+>>> config.MMIF_STORAGE_DIR = 'any/old/directory'
 ```
 
-With the current Flask environment settings the browser will then be running at [http://127.0.0.1:5000/www/](http://127.0.0.1:5000/www/).
+### Storage information and other statistics
 
+The analytics module provides two functions: `storage_paths()` and storage_analytics()`. Use the first to get all paths in the storage:
 
-### Building and installing
-
-There is no pip-installable package on PyPI yet, but you can create a source archive and then install it. For building you run the following, which assumes that the Python build utility is installed:
-
-```bash
-python -m build
+```python
+>>> analytics.storage_paths()
+['swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e', 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e', 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e/spacy-wrapper/v2.3/5fe49d06725497b274b6eaaf0fe0c5d2', 'dummy-app/v0.1/d41d8cd98f00b204e9800998ecf8427e']
 ```
 
-Then install anywhere by using the created archive:
+And use `analytics.storage_analytics()` to see some more information:
 
-```bash
-pip install -r PATH_TO_THIS_REPOSITORY/dist/mmif_storage-0.1.0.tar.gz
+```python
+>>> analytics.storage_analytics()
+```
+
+The result is more verbose than just the list of paths and includes total counts of MMIF files and work flows and some more information for each workflow.
+
+
+### Peeking into the storage directory
+
+Use the peek method in the storage module. It uses the WorkflowItem since in order to peek into the storage we need to know where we are to peek:
+
+```python
+>>> wf = [storage.WorkflowItem(app='swt-detection', version='v8.6', properties={})]
+>>> storage.peek(wf)
+{'workflow_id': 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e', 'filenames': ['cpb-aacip-f551104e446-clip2', 'cpb-aacip-f551104e446-clip1']}
 ```
 
 
-### Command line scripts
+### Retrieving MMIF files
 
-If you have installed the `mmif-storage` package you can also use shell commands to start the API or browser. For these commands the environment settings are ignored.
+To retrieve a file you need a workflow path and we can use the prior peek results to get at that information:
 
-To start the web API:
-
-```bash
-start_api --dir PATH_TO_DIRECTORY --port PORT
+```python
+>>> path = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
+>>> result = storage.get_mmif_file(path, 'cpb-aacip-f551104e446-clip1')
+>>> len(result)
+35349
 ```
 
-Both arguments are optional: the default port is 8000 and the default directory is the current directory.
+Instead of `get_mmif_file()` you can use `get_mmif_files()` and turn the second parameter into a list:
 
-To start the web browser:
-
-```bash
-start_www --dir PATH_TO_DIRECTORY --port PORT
+```python
+>>> result = storage.get_mmif_files(path, ['cpb-aacip-f551104e446-clip1'])
 ```
 
-Again both arguments are optional: the default port is 5000 and the default directory is the current directory.
+If there are more identifiers in the list the return value needs to include all matching MMIF files. This could be done in a JSON object but it i sfar more convenient to use a zip archive. Therefore, the return value of `get_mmif_files()` is a BytesIO object, which should be saved into a zip file.
+
+```python
+>>> with open("output.zip", "wb") as f:
+...     f.write(result.getbuffer())
+```
+
+
+### Uploading MMIF files
+
+To upload a file first read its contents and then use the `upload_mmif()` method from the storage module:
+
+```python
+>>> from importlib.resources import files
+>>> mmif_file = files("mmif_storage").joinpath("data/cpb-aacip-f551104e446-clip1.mmif")
+>>> storage.upload_mmif(mmif_file.read_text())
+PosixPath('dummy-app/v0.1/d41d8cd98f00b204e9800998ecf8427e/cpb-aacip-f551104e446-clip1.mmif')
+```
+
+The first two lines are some boiler plate code to retrieve the example file from the package data (which contains the results from a dummy application), the last line calls the storage API and if succesfull it returns the relative path to the uploaded file.
+
+You can upload a file repeatedly, in which case the old file will be overwritten, use the `overwrite` parameter to avoid that:
+
+```python
+>>> storage.upload_mmif(mmif_file.read_text(), overwrite=False)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/Users/marc/Desktop/projects/clams/code/clamsproject/mmif-storage/src/mmif_storage/storage.py", line 77, in upload_mmif
+    raise FileExistsWarning(path=relative_path)
+mmif_storage.errors.FileExistsWarning: File already exists
+```
+
+You can use `peek()` to confirm that the storage was updated:
+
+```python
+>>> storage.peek([storage.WorkflowItem(app='dummy-app', version='v0.1', properties={})])
+{'workflow_id': 'dummy-app/v0.1/d41d8cd98f00b204e9800998ecf8427e', 'filenames': ['cpb-aacip-f551104e446-clip1']}
+```
+
+<!--
+from mmif_storage import config, storage, analytics
+config.MMIF_STORAGE_DIR = 'tmp-store'
+path = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
+storage.peek([storage.WorkflowItem(app='swt-detection', version='v8.6', properties={})])
+
+result = storage.get_mmif_files(path, ['cpb-aacip-f551104e446-clip1'])
+with open("output.zip", "wb") as f: f.write(result.getbuffer())
+-->
+

@@ -5,10 +5,12 @@ find.sh
 backup.sh
 .env
 venv*
+build
 dist
-src/mmif_storage/database.db
-src/mmif_storage.egg-info
+src/mmif_storage*.egg-info
 storage-response*
+output.zip
 tmp*
 *desc.json
 *summ.json
+data/storage-example
