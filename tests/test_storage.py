@@ -10,11 +10,8 @@ An alternative for the fixture is to mock the storage location:
 """
 
 
-import os
-import sys
 import pathlib
 import pytest
-import shutil
 from collections import namedtuple
 
 from mmif_storage import config, analytics, storage
