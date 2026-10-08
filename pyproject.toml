@@ -4,25 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mmif-storage-mv"
-version = "0.2.0.rc3"
-description = "Tool to manage MMIF files."
+version = "0.2.0.rc5"
+description = "Python interface to manage MMIF files."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Framework :: Flask",
     "Framework :: Pytest",
-    "Framework :: FastAPI",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14"]
 dependencies = [
-	"python-dotenv==1.*",
-	"fastapi[standard]==0.141.*",
-	"flask==3.1.*",
-	"gunicorn==26.*",
+    "pydantic==2.*",
 	"mmif-python==1.4.*",
 	"clams_utils"]
 
@@ -30,21 +25,23 @@ dependencies = [
 dev = ["pytest==9.*"]
 
 [project.scripts]
-start_api = "mmif_storage:start_api"
-start_www = "mmif_storage:start_www"
+create-storage-example = "mmif_storage:create_storage_example"
 
 [project.urls]
 homepage = "https://clams.ai"
 source = "https://github.com/clamsproject/mmif-storage"
 
 [tool.setuptools]
-include-package-data = false
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["./src"]
 
 [tool.setuptools.package-data]
-mmif_storage = ["templates/*", "static/*", "static/**/*"]
+mmif_storage = ["data/**/*.mmif", "data/**/*.json"]
+
+[tool.setuptools.exclude-package-data]
+mmif_storage = ["data/**/*.desc.json", "data/**/*.summ.json"]
 
 [tool.pytest]
 testpaths = ["tests"]

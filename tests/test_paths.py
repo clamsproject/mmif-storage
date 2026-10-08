@@ -1,5 +1,10 @@
-import mmif_storage
-from mmif_storage.model import storage
+"""
+
+Testing StoragePath functionality.
+
+"""
+
+from mmif_storage import storage
 from utils import environment
 
 

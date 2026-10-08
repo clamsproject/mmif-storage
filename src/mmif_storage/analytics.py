@@ -18,24 +18,14 @@ def storage_analytics() -> dict:
     workflows, app parameters, non-terminal MMIFs, and dirty workflow MMIFs.
     """
 
-    # TODO (ledibr @ 10/12/25): consider adding params to show/hide certain parts
-    # e.g. full workflow specs?
-    # TODO (ledibr @ 10/27/25): the analytics seem to be in alphabetical key order,
-    # not chronological. given how long these might get, do we want to potentially
-    # return this differently?
-
-    storage_dir = mmif_storage.config.STORAGE_DIR
+    storage_dir = mmif_storage.config.MMIF_STORAGE_DIR
     analytics = {"total_mmif_files": 0, "total_workflows": 0, "workflows": [],
                 "non_terminal_mmif_count": 0, "dirty_workflow_mmif_count": 0}
     app_specs = {}
 
     for root, dirs, files in os.walk(storage_dir):
-        #if current_app.config.get('DEBUG'):
-        #    print("Root:", root)
-        #    print("dirs:", dirs)
-        #    print("files:", files)
 
-        curr_workflow = root[root.index(storage_dir) + len(storage_dir):]
+        curr_workflow = root[root.index(str(storage_dir)) + len(str(storage_dir)):]
         curr_workflow = curr_workflow.lstrip('/')
 
         json_list = [f for f in files if re.search(r'\.json$', f)]

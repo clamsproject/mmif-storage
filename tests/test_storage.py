@@ -1,24 +1,20 @@
 """
 
-Testing the storage and its web API.
+Testing the Python storage API, also includes tests for the analytics module.
 
 An alternative for the fixture is to mock the storage location:
 
     from unittest.mock import patch
-    @patch('mmif_storage.config.STORAGE_DIR','data/storage-example')    
+    @patch('mmif_storage.config.MMIF_STORAGE_DIR','data/storage-example')    
 
 """
 
 
-import os
-import sys
 import pathlib
 import pytest
-import shutil
 from collections import namedtuple
 
-import mmif_storage
-from mmif_storage.model import storage
+from mmif_storage import config, analytics, storage
 from mmif_storage.errors import DownloadWarning, FileExistsWarning
 from utils import environment
 
@@ -30,11 +26,22 @@ class TestStorage():
 
     def test_storage_dir(self, environment):
         """Check whether the storage directory exist."""
-        storage_directory = mmif_storage.config.STORAGE_DIR
+        storage_directory = config.MMIF_STORAGE_DIR
         assert storage_directory == 'tests/tmp-storage'
         assert pathlib.Path(storage_directory).is_dir()
 
+    def test_paths(self, environment):
+        """Check whether the number of paths is correct."""
+        storage_directory = config.MMIF_STORAGE_DIR
+        assert len(analytics.storage_paths()) == 3
+
+    def test_analytics(self, environment):
+        """Check whether the analytics seem right."""
+        storage_directory = config.MMIF_STORAGE_DIR
+        assert len(analytics.storage_analytics()) == 5
+
     def test_peek(self, environment):
+        """Peeking into a particular directory."""
         workflow = [WorkflowItem('swt-detection', 'v8.6', {})]
         result = storage.peek(workflow)
         expected_result = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
@@ -60,16 +67,15 @@ class TestStorage():
     def test_download_zip(self, environment):
         wfid = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         identifiers = ['cpb-aacip-f551104e446-clip1']
-        full_path = pathlib.Path(mmif_storage.config.STORAGE_DIR) / wfid
-        zip_file = storage.get_mmif_files(str(full_path), identifiers)
+        zip_file = storage.get_mmif_files(wfid, identifiers)
         # Using __sizeof__() instead of sys.getsizeof() to get the core size without
         # any additional garbage collector overhead. 
         zip_file_size = zip_file.__sizeof__()
         assert zip_file_size == 8626
 
     def test_upload(self, environment):
-        """Upload a file and check it is put in the correct spot and also check
-        whether peeking for its workflow identifier gets the correct result."""
+        """Upload a file and check wether it is put in the correct spot and whether
+        peeking for its workflow identifier gets the correct result."""
         wfid = 'dummy-app/v0.1/d41d8cd98f00b204e9800998ecf8427e'
         fname = 'cpb-aacip-f551104e446-clip1.mmif'
         with open(environment.upload_file) as fh:

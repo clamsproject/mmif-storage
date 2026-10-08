@@ -1,29 +1,26 @@
 """
 
-This init file does a few different kind of things:
-
-- Import some names to the package toplevel.
-- Create the flask app and register the single blueprint.
-- Provide entry points for the project scripts that start the FastAPI and Flask
-  servers.
+Import some names to the package toplevel, set up the configuration and
+define the project scripts.
 
 """
-
 
 import os
 import sys
 import argparse
 from pathlib import Path
-from dotenv import load_dotenv
+from importlib.resources import files
 
 from pydantic import BaseModel
-from flask import Flask
-import uvicorn
 
-from mmif_storage.model.storage import StoragePath
+from mmif_storage import storage, analytics
+from mmif_storage.storage import StoragePath, peek, upload_mmif
+from mmif_storage.storage import get_mmif_file, get_mmif_files
+from mmif_storage.analytics import storage_analytics, storage_paths
 
 
-load_dotenv()
+PACKAGE_NAME = "mmif_storage"
+EXAMPLE_STORAGE_DIR = "data/storage-example"
 
 
 class Config(BaseModel):
@@ -31,63 +28,43 @@ class Config(BaseModel):
     to grab a default from the environment, which may or may not include a setting
     for the storage directory. The setting here is overruled when you start your
     FastAPI/Flask server with the start_api or start_www commands."""
-    STORAGE_DIR: str | None = os.environ.get('STORAGE_DIR')
-
-
-# Default host name and ports
-HOSTNAME = '0.0.0.0'
-FLASK_PORT = 5000
-FASTAPI_PORT = 8000
+    MMIF_STORAGE_DIR: str | None = os.environ.get('MMIF_STORAGE_DIR')
 
 
 config = Config()
 
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_prefixed_env()
-    register_blueprints(app)
-    return app
-
-
-def register_blueprints(app: Flask):
-    from mmif_storage.www import bp as bp_www
-    app.register_blueprint(bp_www)
-
-
-def parse_arguments(api=True) -> argparse.Namespace:
-    port = FASTAPI_PORT if api else FLASK_PORT
-    host = HOSTNAME
+def parse_arguments() -> argparse.Namespace:
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
-        '--dir', type=str, default=os.getcwd(),
-        help="MMIF Storage directory, default is the current directory")
-    argparser.add_argument(
-        '--host',type=str, default=host, help=f'host name, default is {host}')
-    argparser.add_argument(
-        '--port', type=int, default=port, help=f"port number, default is {port}")
-    # NOTE. There used to be a --debug option, but it was disabled for two reasons.
-    # Most importantly, when running in debug mode the auto-reload loop breaks in
-    # the sense that the restart ignores your original command line arguments so it
-    # reverts to defaults. There are ways around this (the recommended fix is to
-    # use environment variables, which I did not want to do). The other reason is
-    # that we do not really need a debug mode when starting the API and browser as
-    # done by start_api() and start_www().
-    args = argparser.parse_args(sys.argv[1:])
-    if not Path(args.dir).is_dir():
-        exit(f'Directory "{args.dir}" does not exist, exiting...')
-    return args
+        '-d', type=str, required=True,
+        metavar='DIRECTORY', help="output directory")
+    return argparser.parse_args(sys.argv[1:])
 
 
-def start_api():
-    from mmif_storage.api import app as api_app
-    args = parse_arguments(api=True)
-    config.STORAGE_DIR = args.dir
-    uvicorn.run("mmif_storage.api:app", host=args.host, port=args.port)
-
-
-def start_www():
-    args = parse_arguments(api=False)
-    config.STORAGE_DIR = args.dir
-    # TODO: should replace this with gunicorn
-    create_app().run(host=args.host, port=args.port)
+def create_storage_example(target_dir=None):
+    """Create a directory with the storage example in src/mmif_storage/data. This
+    is intended for other tools like those in mmif-storage-api and clamshack so
+    they can quickly build an example for experimenting or testing, without having
+    to maintain the MMIF data. The target directory is either supplied via the
+    command line invocation of the create-storage-example project script or as a
+    parameter to this function."""
+    if target_dir is None:
+        args = parse_arguments()
+        target_dir = Path(args.d)
+    else:
+        target_dir = Path(target_dir)
+    if target_dir.exists():
+        exit(f"Directory '{args.d}' already exists, exiting...")
+    storage_example = files(PACKAGE_NAME).joinpath(EXAMPLE_STORAGE_DIR)
+    for root, _dirs, fnames in storage_example.walk(on_error=print):
+        for fname in fnames:
+            if not Path(fname).suffix in ('.json', '.mmif'):
+                continue
+            in_path = root / fname
+            short_path = str(in_path)[len(str(storage_example)):]
+            if short_path.startswith('/'):
+                short_path = short_path[1:]
+            out_path = target_dir / short_path
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(in_path.read_text())

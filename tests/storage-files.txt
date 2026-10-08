@@ -1,5 +1,7 @@
 # This files picks parameter and MMIF files from the example storage in the data
-# directory. Just picking the one that are useful for testing.
+# directory. Just picking the one that are useful for testing. This is needed
+# because files could have been added to the example storage and we do not want 
+# to automatically include those.
 
 # SWT results
 
