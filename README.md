@@ -109,7 +109,7 @@ To upload a file first read its contents and then use the `upload_mmif()` method
 PosixPath('dummy-app/v0.1/d41d8cd98f00b204e9800998ecf8427e/cpb-aacip-f551104e446-clip1.mmif')
 ```
 
-The first two lines are some boiler plate code to retrieve the example file from the package data, the last line calls the storage API and if succesfull it returns the relative path to the uploaded file.
+The first two lines are some boiler plate code to retrieve the example file from the package data (which contains the results from a dummy application), the last line calls the storage API and if succesfull it returns the relative path to the uploaded file.
 
 You can upload a file repeatedly, in which case the old file will be overwritten, use the `overwrite` parameter to avoid that:
 
@@ -125,7 +125,7 @@ mmif_storage.errors.FileExistsWarning: File already exists
 You can use `peek()` to confirm that the storage was updated:
 
 ```python
->>> storage.peek([storage.WorkflowItem(app='swt-detection', version='v8.6', properties={})])
+>>> storage.peek([storage.WorkflowItem(app='dummy-app', version='v0.1', properties={})])
 {'workflow_id': 'dummy-app/v0.1/d41d8cd98f00b204e9800998ecf8427e', 'filenames': ['cpb-aacip-f551104e446-clip1']}
 ```
 
