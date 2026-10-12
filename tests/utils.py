@@ -1,3 +1,4 @@
+import os
 import pathlib
 import shutil
 import pytest
@@ -7,13 +8,25 @@ from config import locations
 
 
 @pytest.fixture(scope='session')
-def environment(request):
+def empty_storage(request):
+    """Create the empty test storage directory and set the storage directory in
+    the storage configuration. This is just for the side effects so it is not
+    yielding anything."""
+    shutil.rmtree(locations.empty_storage, ignore_errors=True)
+    os.mkdir(locations.empty_storage)
+    mmif_storage.config.MMIF_STORAGE_DIR = locations.empty_storage
+
+
+@pytest.fixture(scope='session')
+def example_storage(request):
     """Create the test storage directory and set the storage directory in the 
-    storage configuration."""
-    shutil.rmtree(locations.storage_test, ignore_errors=True)
-    mmif_storage.config.MMIF_STORAGE_DIR = locations.storage_test
-    copy_files(locations.file_list, locations.storage_source, locations.storage_test)
-    yield locations
+    storage configuration. Like the ficture above, this is just for the side
+    effect of setting up the storage."""
+    mmif_storage.config.MMIF_STORAGE_DIR = locations.example_storage
+    shutil.rmtree(locations.empty_storage, ignore_errors=True)
+    shutil.rmtree(locations.example_storage, ignore_errors=True)
+    os.mkdir(locations.empty_storage)
+    copy_files(locations.file_list, locations.storage_source, locations.example_storage)
 
 
 def copy_files(file_list: str, indir: str, outdir: str):

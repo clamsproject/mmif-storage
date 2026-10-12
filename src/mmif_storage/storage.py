@@ -263,7 +263,6 @@ class StoragePath():
                 pfile = ParameterFile(self.rel_path.with_suffix('.json'))
                 self.parameter_file = pfile
 
-
     def __str__(self):
         """String representation using the relative path."""
         return f'<StoragePath "{self.shortpathname}">'
