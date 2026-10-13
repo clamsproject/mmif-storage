@@ -37,8 +37,7 @@ config = Config()
 def parse_arguments() -> argparse.Namespace:
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
-        '-d', type=str, required=True,
-        metavar='DIRECTORY', help="output directory")
+        'dir', type=str, metavar='DIRECTORY',help="output directory")
     return argparser.parse_args(sys.argv[1:])
 
 
@@ -51,11 +50,11 @@ def create_storage_example(target_dir=None):
     parameter to this function."""
     if target_dir is None:
         args = parse_arguments()
-        target_dir = Path(args.d)
+        target_dir = Path(args.dir)
     else:
         target_dir = Path(target_dir)
     if target_dir.exists():
-        exit(f"Directory '{args.d}' already exists, exiting...")
+        exit(f"Directory '{args.dir}' already exists, exiting...")
     storage_example = files(PACKAGE_NAME).joinpath(EXAMPLE_STORAGE_DIR)
     for root, _dirs, fnames in storage_example.walk(on_error=print):
         for fname in fnames:
