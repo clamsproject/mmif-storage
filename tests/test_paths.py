@@ -5,16 +5,19 @@ Testing StoragePath functionality.
 """
 
 from mmif_storage import storage
-from utils import environment
+from utils import example_storage
+from config import locations
+
+STORAGE_PATH = locations.example_storage
 
 
 class TestStoragePath():
 
-    def test_path_properties_for_directory(self, environment):
+    def test_path_properties_for_directory(self, example_storage):
         """Test basic properties of the directory path."""
         name = 'd41d8cd98f00b204e9800998ecf8427e'
         rel_path = f'swt-detection/v8.6/{name}'
-        full_path = f'tests/tmp-storage/{rel_path}'
+        full_path = f'{STORAGE_PATH}/{rel_path}'
         shortname = 'swt-detection/v8.6/d41d8cd9/'
         p = storage.StoragePath(rel_path)
         assert p.name == name
@@ -22,13 +25,13 @@ class TestStoragePath():
         assert str(p.full_path) == full_path
         assert str(p.rel_path) == rel_path
 
-    def test_path_properties_for_file(self, environment):
+    def test_path_properties_for_file(self, example_storage):
         """Test basic properties of the file path."""
         dname = 'd41d8cd98f00b204e9800998ecf8427e'
         fname = 'cpb-aacip-f551104e446-clip1.mmif'
         fstem = 'cpb-aacip-f551104e446-clip1'
         rel_path = f'swt-detection/v8.6/{dname}/{fname}'
-        full_path = f'tests/tmp-storage/{rel_path}'
+        full_path = f'{STORAGE_PATH}/{rel_path}'
         p = storage.StoragePath(rel_path)
         assert p.name == fname
         assert p.stem == fstem
@@ -36,7 +39,7 @@ class TestStoragePath():
         assert str(p.rel_path) == rel_path
         assert len(p) == 6
 
-    def test_iterdir(self, environment):
+    def test_iterdir(self, example_storage):
         """Checking the contents of a directory."""
         rel_path = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         p = storage.StoragePath(rel_path)
@@ -46,7 +49,7 @@ class TestStoragePath():
                          'smolvlm2-captioner']
         assert subs == expected_subs
 
-    def test_directories(self, environment):
+    def test_directories(self, example_storage):
         """Checking the contents of a directory."""
         rel_path = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         p = storage.StoragePath(rel_path)
@@ -54,7 +57,7 @@ class TestStoragePath():
         expected_dirs = ['smolvlm2-captioner']
         assert dirs == expected_dirs
 
-    def test_files(self, environment):
+    def test_files(self, example_storage):
         """Checking the contents of a directory."""
         rel_path = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         p = storage.StoragePath(rel_path)
@@ -63,7 +66,7 @@ class TestStoragePath():
                          'cpb-aacip-f551104e446-clip2.mmif']
         assert files == expected_files
 
-    def test_deep_dirs(self, environment):
+    def test_deep_dirs(self, example_storage):
         name = 'd41d8cd98f00b204e9800998ecf8427e'
         rel_path = f'swt-detection/v8.6/{name}'
         p = storage.StoragePath(rel_path)

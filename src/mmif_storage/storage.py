@@ -117,27 +117,36 @@ def write_parameters(root: str, wfid: str, param_dicts: list):
             json.dump(param_dicts[i // 3], f, indent=2)
 
 
-def get_mmif_file(workflow_id: str, identifier: str, num_views: int = 1) -> str:
+def get_mmif_file(workflow_id: str, identifier: str, rewind=True) -> str:
     """
     Retrieve the MMIF file for a workflow and an identifier. If none was found
     raise a DownloadWarning.
     """
-    # TODO. When getting a MMIF file you should NOT have to know in advance
-    # how many views it has.
+    debug = False
     fname = identifier + ".mmif"
     path = os.path.join(mmif_storage.config.MMIF_STORAGE_DIR, workflow_id, fname)
-    # If the filepath exists, we return the content
+    # If the filepath exists, we return the content. Otherwise we try to find a
+    # descendant in the storage and return the contents of that file.
     try:
         with open(path, 'r') as file:
             return file.read()
-    # Otherwise we use the rewinder to check if the user provided a prefix of a
-    # mmif workflow that we have previously stored.
     except FileNotFoundError:
-        try:
-            return rewind_time(workflow_id, fname, num_views)
-        except FileNotFoundError:
-            # The rewinder does not always succeed so we catch this exception
-            # again and raise an application-specific exception.
+        descendant = find_descendant(workflow_id, identifier)
+        if descendant is not None:
+            if rewind: 
+                descendant_rel_path = StoragePath(descendant).rel_path.parent
+                length = len(Path(workflow_id).parts)
+                difference = Path(*descendant_rel_path.parts[length:])
+                apps = set(difference.parts[::3])
+                if debug:
+                    print('\n>>> wfid', workflow_id)
+                    print('>>> desc', descendant_rel_path)
+                    print('>>> diff', difference)
+                    print('>>> apps', apps)
+                return remove_extra_views(descendant, len(apps)) 
+            else:
+                return descendant.read_text()
+        else:
             raise DownloadWarning(f'Did not find: {fname.split(".")[0]}')
 
 
@@ -150,25 +159,24 @@ def get_mmif_files(workflow_id: str, guids: list) -> BytesIO:
     return create_zipfile(full_path, guids)
 
 
-def rewind_time(workflow_id, guid, num_views) -> str:
-    """
-    This method takes in a workflow (path), a guid, and a number of views, and uses
-    os.walk to iterate through directories that begin with that workflow. It takes
-    the first mmif file that matches the guid and uses the rewind feature to include
-    only the views indicated by the workflow.
-    """
-    # TODO: this should fail given it doesn't know where the storage directory is
-    for home, dirs, files in os.walk(workflow_id):
-        # find mmif with matching guid to rewind
+def find_descendant(workflow_id: str, guid: str) -> Path | None:
+    """Return the Path for the closest descendant of the MMIF file with the given
+    identifier at the given workflow."""
+    path = StoragePath(workflow_id)
+    for home, dirs, files in path.full_path.walk(workflow_id):
         for file in files:
-            if guid == file:
-                # rewind the mmif
-                with open(os.path.join(home, file), 'r') as f:
-                    mmif = Mmif(f.read())
-                    # we need to calculate the number of views to rewind
-                    rewound = utils.rewind.rewind_mmif(mmif, len(mmif.views) - num_views)
-                    return rewound.serialize()
-    raise FileNotFoundError
+            if guid + '.mmif' == file:
+                return Path(home) / file
+    return None
+
+
+def remove_extra_views(path: Path, apps=1) -> str:
+    """Use the rewind utility to chop off some views."""
+    with open(path, 'r') as f:
+        mmif = Mmif(f.read())
+        rewound = utils.cli.rewind.rewind_mmif(
+            mmif, apps, choice_is_viewnum=False)
+        return rewound.serialize()
 
 
 def create_zipfile(workflow_id: str, guids: list) -> BytesIO:
@@ -262,7 +270,6 @@ class StoragePath():
             if parameter_file.exists():
                 pfile = ParameterFile(self.rel_path.with_suffix('.json'))
                 self.parameter_file = pfile
-
 
     def __str__(self):
         """String representation using the relative path."""
