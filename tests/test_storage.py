@@ -10,6 +10,7 @@ An alternative for the fixture is to mock the storage location:
 """
 
 
+import json
 import pathlib
 import pytest
 from collections import namedtuple
@@ -30,24 +31,48 @@ class TestEmptyStorage():
     def test_upload(self, empty_storage):
         """Upload a file and check wether it is put in the correct spot and whether
         peeking for its workflow identifier gets the correct result."""
-        # TODO: must be updated once we get the input file fixed because now it does
-        # not include a spacy
         fname = 'cpb-aacip-f551104e446-clip1.mmif'
         with open(test_config.locations.upload_file_spacy) as fh:
             contents = fh.read()
             upload_result = storage.upload_mmif(contents, overwrite=False)
-            assert len(upload_result.parts) == 7
+            assert len(upload_result.parts) == 10
             assert upload_result.parts[-1] == fname
-        workflow = [WorkflowItem('dummy-app', 'v0.1', {})]
+        workflow = [WorkflowItem('swt-detection', 'v8.6', {}),
+                    WorkflowItem('smolvlm2-captioner', 'v1.0', {}),
+                    WorkflowItem('spacy-wrapper', 'v2.2', {})]
         peek_result = storage.peek(workflow)
-        assert 'workflow_id' in peek_result
-        #assert peek_result['workflow_id'] == wfid
+        assert len(pathlib.Path(peek_result['workflow_id']).parts) == 9
+        assert len(peek_result['filenames']) == 1
 
-    def test_rewind(self, empty_storage):
+    def test_rewind_swt(self, empty_storage):
+        """Retrieve descendant and rewind from swt-smolvlm-spacy to swt."""
         wfid = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         identifier = 'cpb-aacip-f551104e446-clip1'
-        #mmif_file = storage.get_mmif_file(wfid, identifier, 1)
-        #assert len(str(mmif_file)) == 35349
+        expected_apps = {'http://apps.clams.ai/swt-detection/v8.6'}
+        # Full file is 37198, after rewinding spacy and smolvlm it should be 23229
+        mmif_file = storage.get_mmif_file(wfid, identifier)
+        assert len(str(mmif_file)) == 23229
+        # The only app in the views list should be swt
+        mmif_obj = json.loads(mmif_file)
+        apps = set([view['metadata']['app'] for view in mmif_obj['views']])
+        assert expected_apps == apps
+
+    def test_rewind_smolvlm2(self, empty_storage):
+        """Retrieve descendant and rewind from swt-smolvlm-spacy to swt-smolvlm."""
+        wfid = (
+            'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
+            '/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e')
+        identifier = 'cpb-aacip-f551104e446-clip1'
+        expected_apps = {
+            'http://apps.clams.ai/swt-detection/v8.6',
+            'http://apps.clams.ai/smolvlm2-captioner/v1.0'}
+        mmif_file = storage.get_mmif_file(wfid, identifier)
+        # Full file is 37198, after rewinding spacy it should be 24516
+        assert len(str(mmif_file)) == 24516
+        # The two apps in the views list should be swt and smolvlm
+        mmif_obj = json.loads(mmif_file)
+        apps = set([view['metadata']['app'] for view in mmif_obj['views']])
+        assert expected_apps == apps
 
 
 class TestExampleStorage():
@@ -81,7 +106,7 @@ class TestExampleStorage():
         """Try downloading a file that exists in the storage."""
         wfid = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         identifier = 'cpb-aacip-f551104e446-clip1'
-        mmif_file = storage.get_mmif_file(wfid, identifier, 1)
+        mmif_file = storage.get_mmif_file(wfid, identifier)
         assert len(str(mmif_file)) == 35349
 
     def test_download_failure(self, example_storage):
@@ -90,7 +115,7 @@ class TestExampleStorage():
         wfid = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
         identifier = 'XXXX'
         with pytest.raises(DownloadWarning):
-            storage.get_mmif_file(wfid, identifier, 1)
+            storage.get_mmif_file(wfid, identifier)
 
     def test_download_zip(self, example_storage):
         wfid = 'swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'

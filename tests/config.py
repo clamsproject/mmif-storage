@@ -18,13 +18,8 @@ STORAGE_SOURCE = 'src/mmif_storage/data/storage-example'
 EXAMPLE_STORAGE = 'tests/tmp-storage-example'
 EMPTY_STORAGE = 'tests/tmp-storage-empty'
 FILE_LIST = 'tests/storage-files.txt'
-UPLOAD_FILE_DUMMY = 'src/mmif_storage/data/cpb-aacip-f551104e446-clip1.mmif'
-UPLOAD_FILE_SPACY = (
-    'src/mmif_storage/data/storage-example'
-    '/swt-detection/v8.6/d41d8cd98f00b204e9800998ecf8427e'
-    '/smolvlm2-captioner/v1.0/d41d8cd98f00b204e9800998ecf8427e'
-    '/spacy-wrapper/v2.3/5fe49d06725497b274b6eaaf0fe0c5d2'
-    '/cpb-aacip-f551104e446-clip1.mmif')
+UPLOAD_FILE_DUMMY = 'src/mmif_storage/data/cpb-aacip-f551104e446-clip1-dummy.mmif'
+UPLOAD_FILE_SPACY = 'src/mmif_storage/data/cpb-aacip-f551104e446-clip1-spacy.mmif'
 
 
 Location = namedtuple('Location', 
